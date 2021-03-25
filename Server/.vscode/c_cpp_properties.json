@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "../WxWidgets/include",
+                "../WxWidgets/lib/gcc810_x64_dll/mswud",
+                "../SOCI_4.0.1/include/soci",
+                "../SOCI_4.0.1/include"
+            ],
+            "defines": [
+                "__WXMSW__",
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "WXUSINGDLL"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "C:/mingw-w64/mingw64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
