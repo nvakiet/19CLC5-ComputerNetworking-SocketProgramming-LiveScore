@@ -1,3 +1,37 @@
+#include "client.h"
+
+int main() {
+	//Init Winsock
+	WSADATA wsaData;
+	auto iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (iResult != 0) {
+		cerr << "Can't initialize Winsock: " << iResult << endl;
+		return 1;
+	}
+
+	//Create a socket to connect to server
+	SOCKET conSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (conSocket == INVALID_SOCKET) {
+		cerr << "Can't create socket: " << WSAGetLastError() << endl;
+		WSACleanup();
+		return 1;
+	}
+
+	//Set the target server to connect to
+	string ipaddr;
+	cout << "Enter server IP: ";
+	cin >> ipaddr;
+	SOCKADDR_IN svAddr;
+	svAddr.sin_family = AF_INET;
+	svAddr.sin_port = htons(DEFAULT_PORT);
+	svAddr.sin_addr.S_un.S_addr = inet_addr(ipaddr.c_str());
+
+	//Connect to the server
+	
+
+	return 0;
+}
+
 //*******************************************************************************************
 
 //TEST WINSOCK2
