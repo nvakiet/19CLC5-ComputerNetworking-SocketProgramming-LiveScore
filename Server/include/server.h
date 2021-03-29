@@ -21,14 +21,17 @@ class Server {
 private:
     //First socket is for listening
     vector<SocketInfo> socketList;
-    vector<WSAEVENT> eventList;
+    vector<bool> shouldRefresh; //Keeping info about whether a client should refresh or not, size = clientlist - 1
     WSADATA wsaData;
     addrinfo *svInfo;
-    vector<bool> shouldRefresh; //Keeping info about whether a client should refresh or not, size = clientlist - 1
     DWORD flag;
     int rc, err; //result code and error code
     //List of all messages the server can handle from clients
-    enum class Msg {Idle = '\0', Listing = '1'};
+    enum class Msg {Idle = '\0', Listing = '1', Change = '2'};
+    //Add a new client socket to the server
+    bool addClientSocket(const SOCKET& newClient);
+    //Remove a socket from the server
+    bool removeSocket(int index);
     //TODO: NEED A MEMBER CLASS TO HANDLE GRAPHIC INTERFACE
 public:
     //Start Winsock and get server address, construct LiveScore Database connector and GUI

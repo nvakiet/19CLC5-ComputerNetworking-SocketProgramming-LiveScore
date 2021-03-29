@@ -28,11 +28,19 @@ Server::~Server() {
     WSACleanup();
 }
 
+bool Server::addClientSocket(const SOCKET& newClient) {
+    socketList.push_back(SocketInfo(newClient));
+    if (WSAEventSelect(socketList.back().socket, socketList.back().handler, FD_WRITE | FD_READ | FD_CLOSE) == SOCKET_ERROR) {
+        cerr << "Unable to track client " << socketList.size() - 1 << " events. This connection will be closed. Error code: " << WSAGetLastError() << endl;
+        
+    }
+    
+}
+
 bool Server::init() {
     //Reserve the server capacity
     //First socket is for accepting connections
     socketList.reserve(WSA_MAXIMUM_WAIT_EVENTS);
-    eventList.reserve(WSA_MAXIMUM_WAIT_EVENTS);
     shouldRefresh.reserve(WSA_MAXIMUM_WAIT_EVENTS - 1);
     //Construct a listen socket
     SOCKET temp = INVALID_SOCKET;
@@ -40,6 +48,12 @@ bool Server::init() {
     if (temp == INVALID_SOCKET) {
         err = WSAGetLastError();
         throw NetworkException("Can't create listening socket", err);
+        return false;
+    }
+    socketList.push_back(SocketInfo(temp));
+    rc = WSAEventSelect(socketList[0].socket, socketList[0].handler, FD_ACCEPT | FD_CLOSE);
+    if (rc == SOCKET_ERROR) {
+        throw NetworkException("WSAEventSelect() failed", WSAGetLastError());
         return false;
     }
     //Bind the listening socket to the server address

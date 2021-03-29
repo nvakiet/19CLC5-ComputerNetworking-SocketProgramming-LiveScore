@@ -18,7 +18,8 @@
 		"files.associations": {
 			"*.tcc": "cpp",
 			"exception": "cpp",
-			"string": "cpp"
+			"string": "cpp",
+			"new": "cpp"
 		}
 	}
 }

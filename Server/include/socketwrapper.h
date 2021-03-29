@@ -11,18 +11,20 @@ using namespace std;
 
 const int BUFSIZE = 1024;
 
-//Simple socket wrapper class for Overlapped I/O Model
+//Simple socket wrapper class for Event-based I/O Model
 class SocketInfo {
 public:
     shared_ptr<char> buf;
     size_t len;
     SOCKET socket;
+    WSAEVENT handler;
     int byteSend;
     int byteRecv;
     char lastMsg; //The most recent message from socket
     SocketInfo(const SOCKET& s);
-    SocketInfo(const SocketInfo &sInf);
-    SocketInfo &operator=(SocketInfo sInf);
+    //Non-copyable
+    SocketInfo(const SocketInfo &sInf) = delete;
+    SocketInfo &operator=(SocketInfo sInf) = delete;
     void setBuffer(char *newBuf, size_t newLen);
     ~SocketInfo();
 };
