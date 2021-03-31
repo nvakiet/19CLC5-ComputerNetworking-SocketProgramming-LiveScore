@@ -7,6 +7,7 @@
 #include "socketwrapper.h"
 #include <mswsock.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <exception>
@@ -19,20 +20,25 @@ using namespace std;
 
 class Server {
 private:
+    char buffer[2048];
     //First socket is for listening
     vector<SocketInfo> socketList;
-    vector<bool> shouldRefresh; //Keeping info about whether a client should refresh or not, size = clientlist - 1
+    //Event handler list
+    vector<WSAEVENT> eventList;
+    //Keeping info about whether a client should refresh or not, size = clientlist - 1
+    vector<bool> shouldRefresh;
     WSADATA wsaData;
     addrinfo *svInfo;
     DWORD flag;
     int rc, err; //result code and error code
     //List of all messages the server can handle from clients
-    enum class Msg {Idle = '\0', Listing = '1', Change = '2'};
+    enum class Msg {Idle = '\0', Listing = '1', Insert = '2'};
     //Add a new client socket to the server
-    bool addClientSocket(const SOCKET& newClient);
+    bool addClientSocket(SOCKET newClient);
     //Remove a socket from the server
     bool removeSocket(int index);
     //TODO: NEED A MEMBER CLASS TO HANDLE GRAPHIC INTERFACE
+    //TODO: NEED A CLASS TO HANDLE DATABASE PROCESSES
 public:
     //Start Winsock and get server address, construct LiveScore Database connector and GUI
     Server();
@@ -42,13 +48,14 @@ public:
     bool init();
     //Accept new client connections
     bool acceptConnects();
+    //Record client messages/requests, get data inputs from client and modify the database
+    int recvMsg(SocketInfo& client, char msg);
+    //Handle client message, send query results/feedbacks/notifications back to clients
+    int sendMsg(SocketInfo &client);
     //Handle network events
-    int handleEvents();
-    //Handle client messages
-    int handleMsg(SocketInfo& client, char msg);
-    //Execute client messages
-    int executeMsg(SocketInfo &client);
-    //TODO: Handle program input, NEED GUI
+    //Return 0 = success, 1 = ignorable error, otherwise = heavy error
+    int handleNetEvents();
+    //TODO: Handle program inputs/events, NEED GUI
     //TODO: Display program window, NEED GUI
 };
 
