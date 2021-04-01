@@ -43,8 +43,6 @@ SocketInfo::~SocketInfo() {
     delete[] buf;
     dataBuf.buf = nullptr;
     buf = nullptr;
-    if (closesocket(socket) == SOCKET_ERROR)
-        throw NetworkException("Can't close socket", WSAGetLastError());
 }
 
 // WSA_EVENT::WSA_EVENT() {

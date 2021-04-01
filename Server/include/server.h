@@ -22,7 +22,7 @@ class Server {
 private:
     char buffer[2048];
     //First socket is for listening
-    vector<SocketInfo> socketList;
+    vector<SocketInfo*> socketList;
     //Event handler list
     vector<WSAEVENT> eventList;
     //Keeping info about whether a client should refresh or not, size = clientlist - 1

@@ -24,17 +24,18 @@ Server::Server() {
 }
 
 Server::~Server() {
-    for (auto event : eventList) {
-        WSACloseEvent(event);
+    for (int i = socketList.size() - 1; i >= 0; --i)
+    {
+        removeSocket(i);
     }
     freeaddrinfo(svInfo);
     WSACleanup();
 }
 
 bool Server::addClientSocket(SOCKET newClient) {
-    socketList.emplace_back(newClient);
-    eventList.emplace_back(WSACreateEvent());
-    if (WSAEventSelect(socketList.back().socket, eventList.back(), FD_WRITE | FD_READ | FD_CLOSE) == SOCKET_ERROR) {
+    socketList.push_back(new SocketInfo(newClient));
+    eventList.push_back(WSACreateEvent());
+    if (WSAEventSelect(socketList.back()->socket, eventList.back(), FD_WRITE | FD_READ | FD_CLOSE) == SOCKET_ERROR) {
         cerr << "Unable to track client " << socketList.size() - 1 << " events. This connection will be closed. Error code: " << WSAGetLastError() << endl;
         socketList.pop_back();
         WSACloseEvent(eventList.back());
@@ -50,13 +51,9 @@ bool Server::removeSocket(int index) {
         cerr << "Invalid socket index" << endl;
         return false;
     }
-    try {
-        socketList.erase(socketList.begin() + index);
-    }
-    catch (const NetworkException& e) {
-        cerr << e.what() << endl;
-        return false;
-    }
+    closesocket(socketList[index]->socket);
+    delete socketList[index];
+    socketList.erase(socketList.begin() + index);
     WSACloseEvent(eventList[index]);
     eventList.erase(eventList.begin() + index);
     if (index > 0) {
@@ -78,25 +75,25 @@ bool Server::init() {
         cerr << "Can't create listening socket, error " << err << endl;
         return false;
     }
-    socketList.emplace_back(temp);
-    eventList.emplace_back(WSACreateEvent());
+    socketList.push_back(new SocketInfo(temp));
+    eventList.push_back(WSACreateEvent());
     if (eventList[0] == WSA_INVALID_EVENT) {
         cerr << "Can't create event handle for listening, error " << endl;
         return false;
     }
-    rc = WSAEventSelect(socketList[0].socket, eventList[0], FD_ACCEPT | FD_CLOSE);
+    rc = WSAEventSelect(socketList[0]->socket, eventList[0], FD_ACCEPT | FD_CLOSE);
     if (rc == SOCKET_ERROR) {
         cerr << "WSAEventSelect() failed, error " << WSAGetLastError() << endl;
         return false;
     }
     //Bind the listening socket to the server address
-    rc = bind(socketList[0].socket, svInfo->ai_addr, (int)svInfo->ai_addrlen);
+    rc = bind(socketList[0]->socket, svInfo->ai_addr, (int)svInfo->ai_addrlen);
     if (rc == SOCKET_ERROR) {
         cerr <<"Unable to bind server address, error " << WSAGetLastError() << endl;
         return false;
     }
     //Begin listening
-    rc = listen(socketList[0].socket, BACKLOG);
+    rc = listen(socketList[0]->socket, BACKLOG);
     if (rc == SOCKET_ERROR) {
         cerr << "Can't listen to connections, error " << WSAGetLastError() << endl;
         return false;
@@ -105,7 +102,7 @@ bool Server::init() {
 }
 
 bool Server::acceptConnects() {
-    SOCKET newClient = accept(socketList[0].socket, nullptr, nullptr);
+    SOCKET newClient = accept(socketList[0]->socket, nullptr, nullptr);
     if (newClient == INVALID_SOCKET) {
         cerr << "Client acception failed, error " << WSAGetLastError() << endl;
         return false;
@@ -131,7 +128,7 @@ int Server::handleNetEvents() {
     int iSock = eventIndex - WSA_WAIT_EVENT_0;
     WSANETWORKEVENTS netEvent;
     //Check the type of triggered event
-    rc = WSAEnumNetworkEvents(socketList[iSock].socket, eventList[iSock], &netEvent);
+    rc = WSAEnumNetworkEvents(socketList[iSock]->socket, eventList[iSock], &netEvent);
     if (rc == SOCKET_ERROR) {
         err = WSAGetLastError();
         cerr << "Can't enumerate network events, error" << err << endl;
@@ -160,9 +157,9 @@ int Server::handleNetEvents() {
         }
         //TODO: MAKE CLIENT-SERVER COMMUNICATION SEQUENCE IN HERE
         //Testing: a multiclient chat server that will relay the message from one client to others
-        socketList[iSock].dataBuf.buf = buffer;
-        socketList[iSock].dataBuf.len = 2048;
-        rc = WSARecv(socketList[iSock].socket, &socketList[iSock].dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
+        socketList[iSock]->dataBuf.buf = buffer;
+        socketList[iSock]->dataBuf.len = 2048;
+        rc = WSARecv(socketList[iSock]->socket, &socketList[iSock]->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
         if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
             //If the receive error is not due to out of buffer space
             cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
@@ -179,9 +176,9 @@ int Server::handleNetEvents() {
             if (i == iSock) {
                 continue;
             }
-            socketList[i].dataBuf.buf = buffer;
-            socketList[i].dataBuf.len = bRecv;
-            rc = WSASend(socketList[i].socket, &socketList[i].dataBuf, 1, &bSend, 0, nullptr, nullptr);
+            socketList[i]->dataBuf.buf = buffer;
+            socketList[i]->dataBuf.len = bRecv;
+            rc = WSASend(socketList[i]->socket, &socketList[i]->dataBuf, 1, &bSend, 0, nullptr, nullptr);
             if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
                 //If the receive error is not due to out of buffer space
                 cerr << "Something went wrong while sending data to client " << i << ", error " << WSAGetLastError() << endl;
@@ -198,7 +195,7 @@ int Server::handleNetEvents() {
         //     cerr << "FD_CLOSE failed with error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
         //     return 1;
         // }
-        shutdown(socketList[iSock].socket, SD_BOTH);
+        shutdown(socketList[iSock]->socket, SD_BOTH);
         if (!removeSocket(iSock)) {
             cerr << "Can't remove socket " << iSock << endl;
             return 1;
