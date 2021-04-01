@@ -1,4 +1,7 @@
 *.dll
 SOCI_4.0.1
 WxWidgets
+.vscode
+*.json
 *.o
+*.exe

@@ -20,7 +20,7 @@ OUTPUT	:= output
 SRC		:= src
 
 # define include directory
-INCLUDE	:= include ../WxWidgets/include ../WxWidgets/lib/gcc810_x64_dll/mswud ../SOCI_4.0.1/include/soci ../SOCI_4.0.1/include
+INCLUDE	:= include
 
 # define lib directory
 LIB		:= lib
@@ -44,7 +44,7 @@ MD	:= mkdir -p
 endif
 
 # define any directories containing header files other than /usr/include
-INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%))
+INCLUDES	:= $(patsubst %,-I%, $(INCLUDEDIRS:%/=%)) -I../WxWidgets/include -I../WxWidgets/lib/gcc810_x64_dll/mswud -I../SOCI_4.0.1/include/soci -I../SOCI_4.0.1/include
 
 # define the C libs
 LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
