@@ -12,7 +12,7 @@ CXXFLAGS	:= -std=c++17 -Wall -Wextra -g
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = -lWs2_32 -L../WxWidgets/lib/gcc810_x64_dll -lwxbase31ud -lwxmsw31ud_core
+LFLAGS = -lWs2_32 -L../WxWidgets/lib/gcc810_x64_dll -lwxbase31ud -lwxmsw31ud_core -lMswsock -lAdvApi32
 # define output directory
 OUTPUT	:= output
 
