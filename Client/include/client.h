@@ -11,7 +11,7 @@
 #include <cstring>
 #include <iostream>
 #include <thread>
-
+#include "sha256.h" //For password enscription
 using namespace std;
 
 #define DEFAULT_BUFLEN 2048
