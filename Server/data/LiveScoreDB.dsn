@@ -1,0 +1,7 @@
+[ODBC]
+DRIVER=ODBC Driver 17 for SQL Server
+TrustServerCertificate=No
+WSID=DELL-PC
+APP=Microsoft® Windows® Operating System
+Trusted_Connection=Yes
+SERVER=localhost

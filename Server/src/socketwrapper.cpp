@@ -30,7 +30,7 @@ SocketInfo& SocketInfo::operator=(SocketInfo sInf) {
 }
 
 void SocketInfo::setBuffer(char *newBuf, size_t newLen) {
-    if (newBuf != buf) {
+    if (newBuf != buf && newBuf != nullptr && newLen != 0) {
         delete[] buf;
         buf = new char[newLen];
         for (int i = 0; i < newLen; ++i)
