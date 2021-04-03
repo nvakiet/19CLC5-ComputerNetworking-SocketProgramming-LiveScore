@@ -4,3 +4,4 @@ WxWidgets
 .vscode
 *.json
 *.o
+*.exe
