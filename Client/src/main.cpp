@@ -242,5 +242,5 @@
 // {
 // 	wxLogMessage("Hello world from wxWidgets!");
 // }
-// #include"GUI.h"
-// wxIMPLEMENT_APP(MyApp);
+#include"GUI.h"
+wxIMPLEMENT_APP(MyApp);

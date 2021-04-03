@@ -22,6 +22,7 @@ private:
     // Client client;
 public:
 bool OnInit();
+//CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
 };
 DECLARE_APP(MyApp);
 class LoginFrame:public wxFrame{
@@ -38,6 +39,8 @@ class LoginFrame:public wxFrame{
     wxString *serverAdd;
     wxString *username;
     wxString *password;
+    wxTextCtrl *server; //OBJECT NÀO TỒN TẠI SUỐT CẢ FRAME THÌ PHẢI LÀ MEMBER CỦA CLASS
+    //THIẾU DESTRUCTOR ĐỂ DELETE CÁC OBJECT ĐC GỌI NEW
     DECLARE_EVENT_TABLE();
 };
 enum{
@@ -48,10 +51,7 @@ enum{
     ID_Login,
 };
 
-wxBEGIN_EVENT_TABLE(LoginFrame,wxFrame)
-EVT_BUTTON(ID_Login,LoginFrame::Login)
-EVT_BUTTON(ID_Register,LoginFrame::Register)
-wxEND_EVENT_TABLE()
+
 class MainFrame: public wxFrame{
     public:
     MainFrame(
@@ -63,10 +63,6 @@ class MainFrame: public wxFrame{
     private:
     DECLARE_EVENT_TABLE();
 };
-wxBEGIN_EVENT_TABLE(MainFrame,wxFrame)
-
-wxEND_EVENT_TABLE()
-
 
 
 
