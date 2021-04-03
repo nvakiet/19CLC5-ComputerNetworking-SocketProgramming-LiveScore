@@ -11,8 +11,17 @@ Client::Client() {
     dataBuf.buf = buffer;
     dataBuf.len = DEFAULT_BUFLEN;
 }
-
-
+ bool Client::connectTo(const string &svIP)
+ {
+     return true;
+ }
+ bool Client::login(const string &username, const string &password){
+     return false;
+ }
+bool Client::registerAcc(const string &username, const string &password)
+{
+    return false;
+}
 NetworkException::NetworkException(const string &err, int code) {
     errString = err;
     errString += " - Error code: " + to_string(code);

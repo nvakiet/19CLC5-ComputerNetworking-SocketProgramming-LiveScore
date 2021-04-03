@@ -1,49 +1,57 @@
 #ifndef GUI_H_
 #define GUI_H_
 #include <wx/wxprec.h>
-#include<iostream>
-#include"client.h"
-#include<wx/string.h>
+#include <iostream>
+#include "client.h"
+#include <wx/string.h>
 #ifndef WX_PRECOMP
-    #include <wx/wx.h>
+#include <wx/wx.h>
 #endif
-#define X_TITLE 100
-#define Y_TITLE 10
-#define X_ServerAdd 85
-#define Y_ServerAdd 80
-#define Witdh_InputBox 20
-#define Length_InputBox 200
-#define X_LoginButton 100
-#define Y_LoginButton 205
-#define Witdh_LoginButton 30
-#define Length_LoginButton 100
-class MyApp:public wxApp{
-private:
-    // Client client;
+const int X_TITLE = 100;
+const int Y_TITLE = 10;
+const int X_ServerAdd = 85;
+const int Y_ServerAdd = 60;
+const int Witdh_InputBox = 20;
+const int Length_InputBox = 200;
+const int X_LoginButton = 110;
+const int Y_LoginButton = 200;
+const int Witdh_LoginButton = 30;
+const int Length_LoginButton = 100;
+
+class LoginFrame : public wxFrame
+{
 public:
-bool OnInit();
-//CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
-};
-DECLARE_APP(MyApp);
-class LoginFrame:public wxFrame{
-    public:
-    LoginFrame(wxWindow *parent,
-            wxWindowID id,
-            const wxString& title,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize
-            );
-    private:
-    void Login(wxCommandEvent&event);
-    void Register(wxCommandEvent&event);
-    wxString *serverAdd;
-    wxString *username;
-    wxString *password;
-    wxTextCtrl *server; //OBJECT NÀO TỒN TẠI SUỐT CẢ FRAME THÌ PHẢI LÀ MEMBER CỦA CLASS
+    LoginFrame( Client*&, wxWindow *parent,
+               wxWindowID id,
+               const wxString &title,
+               const wxPoint &pos = wxDefaultPosition,
+               const wxSize &size = wxDefaultSize,
+               long style = wxDEFAULT_FRAME_STYLE);
+    ~LoginFrame();
+
+private:
+    //client
+    Client *client;
+    //methods
+    void Login(wxCommandEvent &event);
+    void Register(wxCommandEvent &event);
+    void ErrorMsg(wxString);
+    // data member
+    wxBoxSizer *Box;
+    wxStaticText *Title_LS;
+    wxStaticText *serverLabel;
+    wxStaticText *usrnameLabel;
+    wxStaticText *passwordLabel;
+    wxButton *loginButton;
+    wxButton *registerButton;
+    wxTextCtrl *server;
+    wxTextCtrl *user;
+    wxTextCtrl *pwd; //OBJECT NÀO TỒN TẠI SUỐT CẢ FRAME THÌ PHẢI LÀ MEMBER CỦA CLASS
     //THIẾU DESTRUCTOR ĐỂ DELETE CÁC OBJECT ĐC GỌI NEW
     DECLARE_EVENT_TABLE();
 };
-enum{
+enum
+{
     ID_username,
     ID_password,
     ID_server,
@@ -51,19 +59,32 @@ enum{
     ID_Login,
 };
 
-
-class MainFrame: public wxFrame{
-    public:
+class MainFrame : public wxFrame
+{
+public:
     MainFrame(
-            wxWindow *parent,
-            wxWindowID id,
-            const wxString& title,
-            const wxPoint& pos = wxDefaultPosition,
-            const wxSize& size = wxDefaultSize);
-    private:
+        wxWindow *parent,
+        wxWindowID id,
+        const wxString &title,
+        const wxPoint &pos = wxDefaultPosition,
+        const wxSize &size = wxDefaultSize);
+
+private:
     DECLARE_EVENT_TABLE();
 };
 
+class MyApp : public wxApp
+{
+private:
+    Client *client;
+    LoginFrame *lframe;
+    MainFrame *mframe;
 
+public:
+    bool OnInit();
+    //bool OnExit();
+    //CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
+};
+DECLARE_APP(MyApp);
 
 #endif

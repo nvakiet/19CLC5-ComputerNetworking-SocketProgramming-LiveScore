@@ -1,117 +1,117 @@
 #include "client.h"
 
-void showMsg(SOCKET s) {
-    char buffer[2048];
-    int bRecv = 0, flag = 0, ret = 0;
-    WSABUF databuf;
-    do {
-        //Receive reply
-        databuf.buf = buffer;
-        databuf.len = 2048;
-        ret = WSARecv(s, &databuf, 1, (LPDWORD)&bRecv, (LPDWORD)&flag, nullptr, nullptr);
-        if (ret != SOCKET_ERROR) {
-            cout << buffer << endl;
-        }
-        else {
-            cerr << "Error " << WSAGetLastError() << endl;
-            break;
-        }
-    } while (bRecv > 0);
-}
-int main(int argc, char **argv) 
-{
-    WSADATA wsaData;
-    SOCKET ConnectSocket = INVALID_SOCKET;
-    struct addrinfo *result = NULL,
-                    *ptr = NULL,
-                    hints;
-    char buf[DEFAULT_BUFLEN];
-    int iResult;
-    int buflen = DEFAULT_BUFLEN;
+// void showMsg(SOCKET s) {
+//     char buffer[2048];
+//     int bRecv = 0, flag = 0, ret = 0;
+//     WSABUF databuf;
+//     do {
+//         //Receive reply
+//         databuf.buf = buffer;
+//         databuf.len = 2048;
+//         ret = WSARecv(s, &databuf, 1, (LPDWORD)&bRecv, (LPDWORD)&flag, nullptr, nullptr);
+//         if (ret != SOCKET_ERROR) {
+//             cout << buffer << endl;
+//         }
+//         else {
+//             cerr << "Error " << WSAGetLastError() << endl;
+//             break;
+//         }
+//     } while (bRecv > 0);
+// }
+// int main(int argc, char **argv) 
+// {
+//     WSADATA wsaData;
+//     SOCKET ConnectSocket = INVALID_SOCKET;
+//     struct addrinfo *result = NULL,
+//                     *ptr = NULL,
+//                     hints;
+//     char buf[DEFAULT_BUFLEN];
+//     int iResult;
+//     int buflen = DEFAULT_BUFLEN;
     
-    // Validate the parameters
-    if (argc != 2) {
-        printf("usage: %s server-name\n", argv[0]);
-        return 1;
-    }
+//     // Validate the parameters
+//     if (argc != 2) {
+//         printf("usage: %s server-name\n", argv[0]);
+//         return 1;
+//     }
 
-    // Initialize Winsock
-    iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
-        return 1;
-    }
+//     // Initialize Winsock
+//     iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+//     if (iResult != 0) {
+//         printf("WSAStartup failed with error: %d\n", iResult);
+//         return 1;
+//     }
 
-    ZeroMemory( &hints, sizeof(hints) );
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
+//     ZeroMemory( &hints, sizeof(hints) );
+//     hints.ai_family = AF_INET;
+//     hints.ai_socktype = SOCK_STREAM;
+//     hints.ai_protocol = IPPROTO_TCP;
 
-    // Resolve the server address and port
-    iResult = getaddrinfo(argv[1], DEFAULT_PORT, &hints, &result);
-    if ( iResult != 0 ) {
-        printf("getaddrinfo failed with error: %d\n", iResult);
-        WSACleanup();
-        return 1;
-    }
+//     // Resolve the server address and port
+//     iResult = getaddrinfo(argv[1], DEFAULT_PORT, &hints, &result);
+//     if ( iResult != 0 ) {
+//         printf("getaddrinfo failed with error: %d\n", iResult);
+//         WSACleanup();
+//         return 1;
+//     }
 
-    // Attempt to connect to an address until one succeeds
-    for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {
+//     // Attempt to connect to an address until one succeeds
+//     for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {
 
-        // Create a SOCKET for connecting to server
-        ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, 
-            ptr->ai_protocol);
-        if (ConnectSocket == INVALID_SOCKET) {
-            printf("socket failed with error: %ld\n", WSAGetLastError());
-            WSACleanup();
-            return 1;
-        }
+//         // Create a SOCKET for connecting to server
+//         ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, 
+//             ptr->ai_protocol);
+//         if (ConnectSocket == INVALID_SOCKET) {
+//             printf("socket failed with error: %ld\n", WSAGetLastError());
+//             WSACleanup();
+//             return 1;
+//         }
 
-        // Connect to server.
-        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-        if (iResult == SOCKET_ERROR) {
-            closesocket(ConnectSocket);
-            ConnectSocket = INVALID_SOCKET;
-            continue;
-        }
-        break;
-    }
+//         // Connect to server.
+//         iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+//         if (iResult == SOCKET_ERROR) {
+//             closesocket(ConnectSocket);
+//             ConnectSocket = INVALID_SOCKET;
+//             continue;
+//         }
+//         break;
+//     }
 
-    freeaddrinfo(result);
+//     freeaddrinfo(result);
 
-    if (ConnectSocket == INVALID_SOCKET) {
-        printf("Unable to connect to server!\n");
-        WSACleanup();
-        return 1;
-    }
-    WSABUF databuf;
-    DWORD bytesTransmit = 0;
-    DWORD flag = 0;
-    int ret = 0;
-    thread t(showMsg, ConnectSocket);
-    // Receive until the peer closes the connection
-    do {
-        string msg;
-        getline(cin, msg);
-        databuf.buf = (char *)msg.c_str();
-        databuf.len = msg.size() + 1;
-        // Send a message
-        iResult = WSASend(ConnectSocket, &databuf, 1, &bytesTransmit, 0, nullptr, nullptr);
-        if (iResult == SOCKET_ERROR) {
-			printf("send failed with error: %d\n", WSAGetLastError());
-			closesocket(ConnectSocket);
-			WSACleanup();
-			return 1;
-		}
-    } while(true);
-    t.join();
-    // cleanup
-    shutdown(ConnectSocket, SD_BOTH);
-    closesocket(ConnectSocket);
-    WSACleanup();
+//     if (ConnectSocket == INVALID_SOCKET) {
+//         printf("Unable to connect to server!\n");
+//         WSACleanup();
+//         return 1;
+//     }
+//     WSABUF databuf;
+//     DWORD bytesTransmit = 0;
+//     DWORD flag = 0;
+//     int ret = 0;
+//     thread t(showMsg, ConnectSocket);
+//     // Receive until the peer closes the connection
+//     do {
+//         string msg;
+//         getline(cin, msg);
+//         databuf.buf = (char *)msg.c_str();
+//         databuf.len = msg.size() + 1;
+//         // Send a message
+//         iResult = WSASend(ConnectSocket, &databuf, 1, &bytesTransmit, 0, nullptr, nullptr);
+//         if (iResult == SOCKET_ERROR) {
+// 			printf("send failed with error: %d\n", WSAGetLastError());
+// 			closesocket(ConnectSocket);
+// 			WSACleanup();
+// 			return 1;
+// 		}
+//     } while(true);
+//     t.join();
+//     // cleanup
+//     shutdown(ConnectSocket, SD_BOTH);
+//     closesocket(ConnectSocket);
+//     WSACleanup();
 
-    return 0;
-}
+//     return 0;
+// }
 
 //*******************************************************************************************
 
@@ -211,5 +211,5 @@ int main(int argc, char **argv)
 
 
 
-// #include"GUI.h"
-// wxIMPLEMENT_APP(MyApp);
+#include"GUI.h"
+wxIMPLEMENT_APP(MyApp);
