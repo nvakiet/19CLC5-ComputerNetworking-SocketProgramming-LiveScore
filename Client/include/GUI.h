@@ -1,6 +1,7 @@
 #ifndef GUI_H_
 #define GUI_H_
 #include <wx/wxprec.h>
+#include <wx/msgdlg.h>
 #include <iostream>
 #include "client.h"
 #include <wx/string.h>
@@ -35,6 +36,7 @@ private:
     //methods
     void Login(wxCommandEvent &event);
     void Register(wxCommandEvent &event);
+    void OnExit(wxCommandEvent &event);
     void ErrorMsg(wxString);
     // data member
     wxBoxSizer *Box;
@@ -82,7 +84,7 @@ private:
 
 public:
     bool OnInit();
-    //bool OnExit();
+    int OnExit();
     //CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
 };
 DECLARE_APP(MyApp);

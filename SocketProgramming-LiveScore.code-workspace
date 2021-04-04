@@ -19,7 +19,17 @@
 			"*.tcc": "cpp",
 			"exception": "cpp",
 			"string": "cpp",
-			"new": "cpp"
+			"new": "cpp",
+			"iostream": "cpp",
+			"ostream": "cpp",
+			"cstring": "cpp",
+			"string_view": "cpp",
+			"fstream": "cpp",
+			"istream": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"system_error": "cpp",
+			"typeinfo": "cpp"
 		}
 	}
 }

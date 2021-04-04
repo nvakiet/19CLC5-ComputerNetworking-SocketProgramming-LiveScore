@@ -7,28 +7,27 @@ bool MyApp::OnInit()
     lframe->Show(true);
     return true;
 }
-// bool MyApp::OnExit(){
-//     delete lframe;
-//     delete mframe;
-
-// }
-LoginFrame::LoginFrame( Client *&cl, wxWindow *parent,
+int MyApp::OnExit()
+{
+    
+    
+}
+LoginFrame::LoginFrame(Client *&cl, wxWindow *parent,
                        wxWindowID id,
                        const wxString &title,
                        const wxPoint &pos,
                        const wxSize &size,
-                       long style) : wxFrame(parent, id, title, pos, size,style)
+                       long style) : wxFrame(parent, id, title, pos, size, style)
 {
     client = cl;
     Box = new wxBoxSizer(wxHORIZONTAL);
-    
+
     Title_LS = new wxStaticText(this, wxID_ANY, _("LIVE SCORE"), wxPoint(0, Y_TITLE), wxSize(size.GetWidth(), 50), wxALIGN_CENTRE_HORIZONTAL);
     // create box
     Box->Add(Title_LS);
 
     serverLabel = new wxStaticText(this, wxID_ANY, _("Server Address: "), wxPoint(X_ServerAdd, Y_ServerAdd), wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
     Box->Add(serverLabel);
-    //ĐỂ SỬ DỤNG CÁC TEXTCTRL NÀY TRONG HÀM KHÁC THÌ PHẢI ĐẶT NÓ LÀM MEMBER CỦA CLASS
     server = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(X_ServerAdd + 90, Y_ServerAdd), wxSize(Length_InputBox, Witdh_InputBox));
     Box->Add(server, 2, 0, 10, NULL);
 
@@ -45,22 +44,22 @@ LoginFrame::LoginFrame( Client *&cl, wxWindow *parent,
     //add button
     wxButton *loginButton = new wxButton(this, ID_Login, wxT("LOG IN"), wxPoint(X_LoginButton, Y_LoginButton), wxSize(Length_LoginButton, Witdh_LoginButton));
     Box->Add(loginButton);
-    registerButton = new wxButton(this, ID_Register, wxT("REGISTER"), wxPoint(X_LoginButton + 150, Y_LoginButton), wxSize(Length_LoginButton, Witdh_LoginButton));
+    registerButton = new wxButton(this, ID_Register, wxT("REGISTER"), wxPoint(X_LoginButton + 200, Y_LoginButton), wxSize(Length_LoginButton, Witdh_LoginButton));
     Box->Add(registerButton);
 }
 LoginFrame::~LoginFrame()
 {
-    delete []Box;
-    delete []Title_LS;
-    delete []serverLabel;
-    delete []usrnameLabel;
-    delete []passwordLabel;
-    delete []loginButton;
-    delete []registerButton;
+    delete Box;
+    delete Title_LS;
+    delete serverLabel;
+    delete usrnameLabel;
+    delete passwordLabel;
+    delete loginButton;
+    delete registerButton;
 
-    delete []server;
-    delete []user;
-    delete []pwd;
+    delete server;
+    delete user;
+    delete pwd;
 }
 void LoginFrame::Login(wxCommandEvent &event)
 {
@@ -68,20 +67,18 @@ void LoginFrame::Login(wxCommandEvent &event)
     {
         if (client->login(user->GetValue().ToStdString(), pwd->GetValue().ToStdString()))
         {
-            cout<<"Login Successfuly"<<endl;
+            
             event.Skip();
         }
         else
         {
-             ErrorMsg("Failed to Login!!");
+            ErrorMsg("Failed to Login!!");
             // exception window : Login Failed
         }
     }
     else
     {
-         ErrorMsg("Failed to connect to server!!");
-        // exception: Connecting to Server: Failed
-
+        ErrorMsg("Failed to connect to server!!");
     }
 }
 void LoginFrame::Register(wxCommandEvent &event)
@@ -90,28 +87,35 @@ void LoginFrame::Register(wxCommandEvent &event)
     {
         if (client->registerAcc(user->GetValue().ToStdString(), pwd->GetValue().ToStdString()))
         {
-            cout<<"Register Successfuly"<<endl;
             event.Skip();
         }
         else
         {
-             ErrorMsg("Failed to Register!!");
-            // exception window : Register Failed
+            ErrorMsg("Failed to Register!!");
         }
     }
     else
     {
         ErrorMsg("Failed to connect to server!!");
-        // exception: Connecting to Server: Failed
     }
 }
-void LoginFrame::ErrorMsg(wxString msg){
+void LoginFrame::ErrorMsg(wxString msg)
+{
     wxMessageBox(msg, wxT("Error Message"),
-                  wxOK | wxICON_INFORMATION, this);
+                 wxOK | wxICON_INFORMATION, this);
+}
+void LoginFrame::OnExit(wxCommandEvent &event){
+     int answer = wxMessageBox("Quit program?", "Confirm",
+                              wxYES_NO, NULL);
+    if (answer == wxYES)
+    {
+        close(true);
+    }
 }
 wxBEGIN_EVENT_TABLE(LoginFrame, wxFrame)
     EVT_BUTTON(ID_Login, LoginFrame::Login)
         EVT_BUTTON(ID_Register, LoginFrame::Register)
+        EVT_MENU(wxID_EXIT,LoginFrame::OnExit)
             wxEND_EVENT_TABLE();
 
 MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size) : wxFrame(parent, id, title, pos, size)
@@ -120,5 +124,3 @@ MainFrame::MainFrame(wxWindow *parent, wxWindowID id, const wxString &title, con
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 
     wxEND_EVENT_TABLE();
-
-//wxIMPLEMENT_APP(MyApp);
