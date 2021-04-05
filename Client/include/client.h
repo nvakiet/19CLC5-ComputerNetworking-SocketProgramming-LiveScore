@@ -14,7 +14,7 @@
 #include "sha256.h" //For password enscription
 using namespace std;
 
-#define DEFAULT_BUFLEN 2048
+#define DEFAULT_BUFLEN 1024
 #define DEFAULT_PORT "10201"
 
 class Client {
@@ -37,17 +37,19 @@ public:
     bool connectTo(const string &svIP);
     //Check for network events from the connection
     bool pollNetworkEvents();
+    //Check if server is sending some message to the client
+    bool hasMsgFromServer() const;
+    //Send data to the server, input nullptr = using client's default buffer, return number of bytes sent
+    bool sendData(char *buf, size_t dataSize, DWORD& bSent);
+    //Receive data from server, input nullptr = using client's default buffer, return number of bytes received
+    bool recvData(char *retBuf, size_t retSize, DWORD& bRecv);
+    //If the server disconnected, close the socket and set it to invalid to prevent other functions from working
+    //Return: 1 = Server or Client has shutdown connection (could be due to some errors), 0 = Connecting normally, -1 = Error when trying to close connection
+    int closeConnection();
     //Log in to the server
     bool login(const string &username, const string &password);
     //Register a new account to the server
     bool registerAcc(const string &username, const string &password);
-    //If the server disconnected, close the socket and set it to invalid to prevent other functions from working
-    bool closeConnection();
-    //Send data to the server
-    bool sendData(char *buf, size_t dataSize);
-    //Receive data from server
-    bool recvData(char *retBuf, size_t retSize);
-    
 };
 
 class NetworkException : public exception {

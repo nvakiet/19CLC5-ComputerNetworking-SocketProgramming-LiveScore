@@ -78,7 +78,7 @@ bool Server::init() {
     socketList.push_back(new SocketInfo(temp));
     eventList.push_back(WSACreateEvent());
     if (eventList[0] == WSA_INVALID_EVENT) {
-        cerr << "Can't create event handle for listening, error " << endl;
+        cerr << "Can't create event handle for listening, error " << WSAGetLastError() << endl;
         return false;
     }
     rc = WSAEventSelect(socketList[0]->socket, eventList[0], FD_ACCEPT | FD_CLOSE);
