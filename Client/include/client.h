@@ -17,7 +17,10 @@ using namespace std;
 #define DEFAULT_BUFLEN 1024
 #define DEFAULT_PORT "10201"
 
-class Client {
+class Client
+{
+private:
+    bool isAdmin;
 protected:
     SOCKET connector;
     WSAEVENT handler;
@@ -40,9 +43,9 @@ public:
     //Check if server is sending some message to the client
     bool hasMsgFromServer() const;
     //Send data to the server, input nullptr = using client's default buffer, return number of bytes sent
-    bool sendData(char *buf, size_t dataSize, DWORD& bSent);
+    bool sendData(char *buf, size_t dataSize, DWORD &bSent);
     //Receive data from server, input nullptr = using client's default buffer, return number of bytes received
-    bool recvData(char *retBuf, size_t retSize, DWORD& bRecv);
+    bool recvData(char *retBuf, size_t retSize, DWORD &bRecv);
     //If the server disconnected, close the socket and set it to invalid to prevent other functions from working
     //Return: 1 = Server or Client has shutdown connection (could be due to some errors), 0 = Connecting normally, -1 = Error when trying to close connection
     int closeConnection();
@@ -50,14 +53,19 @@ public:
     bool login(const string &username, const string &password);
     //Register a new account to the server
     bool registerAcc(const string &username, const string &password);
+    // Check if client 
+    bool isAdminAccount();
+
 };
 
-class NetworkException : public exception {
-    private:
-        string errString;
-    public:
-        NetworkException(const string &err, int code);
-        const char* what() const noexcept override;
+class NetworkException : public exception
+{
+private:
+    string errString;
+
+public:
+    NetworkException(const string &err, int code);
+    const char *what() const noexcept override;
 };
 
 #endif

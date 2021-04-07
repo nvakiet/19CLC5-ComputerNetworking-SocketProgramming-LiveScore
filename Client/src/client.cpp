@@ -171,11 +171,11 @@ int Client::closeConnection() {
 }
 
 bool Client::login(const string &username, const string &password) {
-
+    return true;
 }
 
 bool Client::registerAcc(const string &username, const string &password) {
-
+    return true;
 }
 
 NetworkException::NetworkException(const string &err, int code) {
@@ -185,4 +185,8 @@ NetworkException::NetworkException(const string &err, int code) {
 
 const char* NetworkException::what() const noexcept {
     return errString.c_str();
+}
+
+bool Client::isAdminAccount(){
+    return isAdmin;
 }

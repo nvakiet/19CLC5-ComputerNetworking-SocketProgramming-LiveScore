@@ -1,78 +1,122 @@
 #ifndef GUI_H_
 #define GUI_H_
 #include <wx/wxprec.h>
-#include <wx/msgdlg.h>
+#include <wx/grid.h>
 #include <iostream>
 #include "client.h"
 #include <wx/string.h>
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #endif
-const int X_TITLE = 100;
-const int Y_TITLE = 10;
-const int X_ServerAdd = 85;
-const int Y_ServerAdd = 60;
-const int Witdh_InputBox = 20;
-const int Length_InputBox = 200;
-const int X_LoginButton = 110;
-const int Y_LoginButton = 200;
-const int Witdh_LoginButton = 30;
-const int Length_LoginButton = 100;
 
-class LoginFrame : public wxFrame
-{
-public:
-    LoginFrame( Client*&, wxWindow *parent,
-               wxWindowID id,
-               const wxString &title,
-               const wxPoint &pos = wxDefaultPosition,
-               const wxSize &size = wxDefaultSize,
-               long style = wxDEFAULT_FRAME_STYLE);
-    ~LoginFrame();
 
-private:
-    //client
-    Client *client;
-    //methods
-    void Login(wxCommandEvent &event);
-    void Register(wxCommandEvent &event);
-    void OnExit(wxCommandEvent &event);
-    void ErrorMsg(wxString);
-    // data member
-    wxBoxSizer *Box;
-    wxStaticText *Title_LS;
-    wxStaticText *serverLabel;
-    wxStaticText *usrnameLabel;
-    wxStaticText *passwordLabel;
-    wxButton *loginButton;
-    wxButton *registerButton;
-    wxTextCtrl *server;
-    wxTextCtrl *user;
-    wxTextCtrl *pwd; //OBJECT NÀO TỒN TẠI SUỐT CẢ FRAME THÌ PHẢI LÀ MEMBER CỦA CLASS
-    //THIẾU DESTRUCTOR ĐỂ DELETE CÁC OBJECT ĐC GỌI NEW
-    DECLARE_EVENT_TABLE();
-};
-enum
+
+class LoginFrame : public wxFrame 
 {
-    ID_username,
-    ID_password,
-    ID_server,
-    ID_Register,
-    ID_Login,
+	private:
+		Client *client;
+	protected:
+		wxStaticText* TITLE1;
+		wxStaticText* serverLabel;
+		wxTextCtrl* inputServerText;
+		wxStaticText* userLabel;
+		wxTextCtrl* inputUserText;
+		wxStaticText* passLabel;
+		wxTextCtrl* inputPassText;
+		wxButton* loginButton;
+		wxButton* registerButton;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnExitFrame( wxCloseEvent& event ) {event.Skip();}
+    	virtual void ErrorMsg(wxString);
+		virtual void OnLoginClick( wxCommandEvent& event );
+		virtual void OnRegisterClick( wxCommandEvent& event );
+	
+	public:
+		
+		LoginFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 600,500 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
+		
+		~LoginFrame();
+	
 };
 
-class MainFrame : public wxFrame
-{
-public:
-    MainFrame(
-        wxWindow *parent,
-        wxWindowID id,
-        const wxString &title,
-        const wxPoint &pos = wxDefaultPosition,
-        const wxSize &size = wxDefaultSize);
 
-private:
-    DECLARE_EVENT_TABLE();
+class MainFrame : public wxFrame 
+{
+	private:
+		Client *client;
+		void InitializeTableMATCH();
+	protected:
+		wxStaticText* TITLE;
+		wxButton* REFRESH_BUTTON;
+		wxStaticText* SEARCH_TEXT;
+		wxTextCtrl* InputIDText;
+		wxButton* SEARCH_BUTTON;
+		wxGrid* LIST_MATCH;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnExitFrame( wxCloseEvent& event );
+		virtual void OnRefreshClick( wxCommandEvent& event );
+		virtual void OnSearchByIDClick( wxCommandEvent& event );
+		virtual void OnSearchDetailsClick( wxGridEvent& event );
+		virtual void InitiTableMatch();
+	
+	public:
+		
+		MainFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 512,371 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
+		
+		~MainFrame();
+	
+};
+class DetailFrame_ForAdmin : public wxFrame 
+{
+	private:
+	
+	protected:
+		wxStaticText* TITLE;
+		wxButton* REFRESH_BUTTON;
+		wxButton* AddBUTTON;
+		wxButton* UPDATEBUTTON;
+		wxButton* DELETEBUTON;
+		wxStaticText* TeamALabel;
+		wxStaticText* ScoreLabel;
+		wxStaticText* TeamBLabel;
+		wxGrid* DETAILS_MATCH_TABLE;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAddClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnUpdateClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnDeleteCLick( wxCommandEvent& event ) { event.Skip(); }
+		
+	
+	public:
+		
+		DetailFrame_ForAdmin( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
+		
+		~DetailFrame_ForAdmin();
+	
+};
+
+class DetailFrame_ForClient : public wxFrame 
+{
+	private:
+	
+	protected:
+		wxStaticText* TITLE;
+		wxStaticText* m_staticText7;
+		wxStaticText* m_staticText8;
+		wxStaticText* m_staticText11;
+		wxStaticText* m_staticText12;
+		wxStaticText* m_staticText13;
+		wxGrid* LIST_MATCH;
+	
+	public:
+		
+		DetailFrame_ForClient( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 511,302 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+		
+		~DetailFrame_ForClient();
+	
 };
 
 class MyApp : public wxApp
@@ -81,7 +125,8 @@ private:
     Client *client;
     LoginFrame *lframe;
     MainFrame *mframe;
-
+	DetailFrame_ForAdmin *df_admin;
+	DetailFrame_ForClient *df_client;
 public:
     bool OnInit();
     int OnExit();
@@ -90,3 +135,4 @@ public:
 DECLARE_APP(MyApp);
 
 #endif
+

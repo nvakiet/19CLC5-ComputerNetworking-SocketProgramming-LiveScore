@@ -1,4 +1,4 @@
-#include "client.h"
+//#include "client.h"
 
 // void showMsg(SOCKET s) {
 //     char buffer[2048];
@@ -208,8 +208,6 @@
 // {
 // 	wxLogMessage("Hello world from wxWidgets!");
 // }
-
-
 
 #include"GUI.h"
 wxIMPLEMENT_APP(MyApp);
