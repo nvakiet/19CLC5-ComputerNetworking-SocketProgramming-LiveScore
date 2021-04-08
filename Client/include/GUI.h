@@ -58,7 +58,7 @@ class MainFrame : public wxFrame
 		virtual void OnExitFrame( wxCloseEvent& event );
 		virtual void OnRefreshClick( wxCommandEvent& event );
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
-		virtual void OnSearchDetailsClick( wxGridEvent& event );
+		virtual void OnSearchDetailsDClick( wxGridEvent& event );
 		virtual void InitiTableMatch();
 	
 	public:
@@ -78,6 +78,8 @@ class DetailFrame_ForAdmin : public wxFrame
 		wxButton* AddBUTTON;
 		wxButton* UPDATEBUTTON;
 		wxButton* DELETEBUTON;
+		wxStaticText* GroupNameLabel;
+		wxStaticText* StartDateLabel;
 		wxStaticText* TeamALabel;
 		wxStaticText* ScoreLabel;
 		wxStaticText* TeamBLabel;
@@ -89,7 +91,6 @@ class DetailFrame_ForAdmin : public wxFrame
 		virtual void OnUpdateClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteCLick( wxCommandEvent& event ) { event.Skip(); }
 		
-	
 	public:
 		
 		DetailFrame_ForAdmin( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
@@ -104,16 +105,21 @@ class DetailFrame_ForClient : public wxFrame
 	
 	protected:
 		wxStaticText* TITLE;
-		wxStaticText* m_staticText7;
-		wxStaticText* m_staticText8;
-		wxStaticText* m_staticText11;
-		wxStaticText* m_staticText12;
-		wxStaticText* m_staticText13;
-		wxGrid* LIST_MATCH;
+		wxButton* REFRESH_BUTTON;
+		wxStaticText* GroupNameLabel;
+		wxStaticText* StartDateLabel;
+		wxStaticText* TeamALabel;
+		wxStaticText* ScoreLabel;
+		wxStaticText* TeamBLabel;
+		wxGrid* DETAILS_MATCH_TABLE;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
+		
 	
 	public:
 		
-		DetailFrame_ForClient( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 511,302 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+		DetailFrame_ForClient( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxALWAYS_SHOW_SB );
 		
 		~DetailFrame_ForClient();
 	
