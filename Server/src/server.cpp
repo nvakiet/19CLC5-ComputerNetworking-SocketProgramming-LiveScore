@@ -62,6 +62,7 @@ bool Server::removeSocket(int index) {
         accounts.erase(accounts.begin() + index - 1);
     }
     cout << "Socket " << index << " is removed" << endl;
+    cout << "Current client number: " << socketList.size() - 1 << endl;
     return true;
 }
 
@@ -210,7 +211,7 @@ int Server::closeConnection(int sockIndex) {
         return 1;
     if (netEvent.lNetworkEvents & FD_CLOSE) {
         if (netEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
-            cerr << "User " << accounts[sockIndex - 1].username << " has been disconnected incorrectly on the client side, error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
+            cerr << "User " << accounts[sockIndex - 1].username << " has been disconnected ungracefully on the client side, error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
         }
         cout << "Closing connection with user " << accounts[sockIndex - 1].username << endl;
         if (!removeSocket(sockIndex)) {

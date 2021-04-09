@@ -95,12 +95,12 @@ bool Client::hasMsgFromServer() const {
 
 bool Client::sendData(char *buf, size_t dataSize, DWORD& bSent) {
     //Check whether the server is ready to receive data from client
-    if (!(netEvent.lNetworkEvents & FD_WRITE))
-        return false;
-    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
-        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
-        return false;
-    }
+    // if (!(netEvent.lNetworkEvents & FD_WRITE))
+    //     return false;
+    // if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
+    //     cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
+    //     return false;
+    // }
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "There's nothing to send! Data size can't be 0!" << endl;
@@ -173,20 +173,20 @@ int Client::closeConnection() {
 }
 
 bool Client::login(const string &username, const string &password) {
-    cout << username << endl;
-    cout << password << endl;
     char rCode = '1';
     DWORD bSend = 0;
     //Send command
-    sendData(&rCode, sizeof(char), bSend);
+    if (!sendData(&rCode, sizeof(char), bSend)) return false;
     //Send username
-    size_t expectedSize = username.size() + 1;
-    sendData((char *)&expectedSize, sizeof(size_t), bSend);
-    sendData((char *)username.c_str(), expectedSize, bSend);
+    size_t expectedSize = username.size();
+    if (!sendData((char *)&expectedSize, sizeof(size_t), bSend)) return false;
+    if (!sendData((char *)username.c_str(), expectedSize, bSend)) return false;
     //Send password
-    expectedSize = password.size() + 1;
-    sendData((char *)&expectedSize, sizeof(size_t), bSend);
-    sendData((char *)password.c_str(), expectedSize, bSend);
+    expectedSize = password.size();
+    if (!sendData((char *)&expectedSize, sizeof(size_t), bSend)) return false;
+    if (!sendData((char *)password.c_str(), expectedSize, bSend)) return false;
+    cout << username << endl;
+    cout << password << endl;
     return true;
 }
 

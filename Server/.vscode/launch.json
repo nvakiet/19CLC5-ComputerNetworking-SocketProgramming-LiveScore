@@ -25,7 +25,14 @@
                 "miDebuggerPath": "gdb.exe",
                 "program": "${workspaceFolder}/output/main.exe"
             },
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+            "setupCommands": [
+                {
+                    "text": "-enable-pretty-printing", 
+                    "description": "Enable GDB pretty printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }
