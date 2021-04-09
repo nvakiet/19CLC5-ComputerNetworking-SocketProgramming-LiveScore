@@ -12,7 +12,7 @@ int main() {
             if (server.acceptConnects() == -1)
                break;
             if (iSock > 0) {
-               char rCode;
+               char rCode = '0';
                if (server.recvData(iSock, &rCode, sizeof(char)))
                   cout << "Client sends " << rCode << endl;
                server.handleRequest(rCode, iSock);

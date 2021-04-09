@@ -131,7 +131,7 @@ LoginFrame::~LoginFrame()
     this->Disconnect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(LoginFrame::OnExitFrame));
     loginButton->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(LoginFrame::OnLoginClick), NULL, this);
     registerButton->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(LoginFrame::OnRegisterClick), NULL, this);
-    delete client;
+    //delete client;
     delete TITLE1;
     delete serverLabel;
     delete inputServerText;
@@ -145,12 +145,16 @@ LoginFrame::~LoginFrame()
 
 void LoginFrame::OnLoginClick(wxCommandEvent &event)
 {
-
+    // this->Close();
+    // MainFrame *mframe = new MainFrame(client, NULL);
+    // mframe->Show(true);
     if (client->connectTo(inputServerText->GetValue().ToStdString()))
     {
         if (client->login(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString()))
         {
             this->Close();
+            MainFrame *mframe = new MainFrame(client, NULL);
+            mframe->Show(true);
         }
         else
         {
