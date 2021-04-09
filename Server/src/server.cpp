@@ -1,8 +1,8 @@
 #include "server.h"
 
-Server::Server() {
+Server::Server(const string& connectString) : db(connectString) {
     svInfo = nullptr;
-    flag = rc = err = 0;
+    rc = err = 0;
     //Start winsock
     rc = WSAStartup(0x0202, &wsaData);
     if (rc != 0) {
@@ -19,8 +19,6 @@ Server::Server() {
     if (rc != 0) {
         throw NetworkException("Can't get server address", rc);
     }
-    //Begin connecting the server to database
-    //Construct the GUI
 }
 
 Server::~Server() {
@@ -30,6 +28,7 @@ Server::~Server() {
     }
     freeaddrinfo(svInfo);
     WSACleanup();
+    db.logoutAll();
 }
 
 bool Server::addClientSocket(SOCKET newClient) {
@@ -43,6 +42,7 @@ bool Server::addClientSocket(SOCKET newClient) {
         return false;
     }
     shouldRefresh.push_back(false);
+    accounts.push_back(User());
     return true;
 }
 
@@ -58,7 +58,10 @@ bool Server::removeSocket(int index) {
     eventList.erase(eventList.begin() + index);
     if (index > 0) {
         shouldRefresh.erase(shouldRefresh.begin() + index - 1);
+        db.logoutUser(accounts[index - 1].username);
+        accounts.erase(accounts.begin() + index - 1);
     }
+    cout << "Socket " << index << " is removed" << endl;
     return true;
 }
 
@@ -68,6 +71,7 @@ bool Server::init() {
     socketList.reserve(WSA_MAXIMUM_WAIT_EVENTS);
     eventList.reserve(WSA_MAXIMUM_WAIT_EVENTS);
     shouldRefresh.reserve(WSA_MAXIMUM_WAIT_EVENTS - 1);
+    accounts.reserve(WSA_MAXIMUM_WAIT_EVENTS - 1);
     //Construct a listen socket
     SOCKET temp = socket(svInfo->ai_family, svInfo->ai_socktype, svInfo->ai_protocol);
     if (temp == INVALID_SOCKET) {
@@ -81,7 +85,7 @@ bool Server::init() {
         cerr << "Can't create event handle for listening, error " << WSAGetLastError() << endl;
         return false;
     }
-    rc = WSAEventSelect(socketList[0]->socket, eventList[0], FD_ACCEPT | FD_CLOSE);
+    rc = WSAEventSelect(socketList[0]->socket, eventList[0], FD_ACCEPT);
     if (rc == SOCKET_ERROR) {
         cerr << "WSAEventSelect() failed, error " << WSAGetLastError() << endl;
         return false;
@@ -101,107 +105,147 @@ bool Server::init() {
     return true;
 }
 
-bool Server::acceptConnects() {
-    SOCKET newClient = accept(socketList[0]->socket, nullptr, nullptr);
-    if (newClient == INVALID_SOCKET) {
-        cerr << "Client acception failed, error " << WSAGetLastError() << endl;
-        return false;
-    }
-    if (socketList.size() == WSA_MAXIMUM_WAIT_EVENTS) {
-        cerr << "Too many connections - closing new socket..." << endl;
-        closesocket(newClient);
-        return false;
-    }
-    if (!addClientSocket(newClient))
-        return false;
-    return true;
-}
-
-int Server::handleNetEvents() {
+int Server::pollNetEvents() {
     //Wait for a socket to trigger an event
     int eventIndex = WSAWaitForMultipleEvents(eventList.size(), eventList.data(), false, WSA_INFINITE, false);
     if (eventIndex == WSA_WAIT_FAILED) {
         err = WSAGetLastError();
         cerr << "Waiting for multiple events failed, error " << err << endl;
-        return err;
+        return -1;
     }
     int iSock = eventIndex - WSA_WAIT_EVENT_0;
-    WSANETWORKEVENTS netEvent;
     //Check the type of triggered event
     rc = WSAEnumNetworkEvents(socketList[iSock]->socket, eventList[iSock], &netEvent);
     if (rc == SOCKET_ERROR) {
         err = WSAGetLastError();
         cerr << "Can't enumerate network events, error" << err << endl;
-        return err;
+        return -1;
     }
-    //Accept signal
-    if (netEvent.lNetworkEvents & FD_ACCEPT && iSock == 0) {
+    return iSock;
+}
+
+int Server::acceptConnects() {
+    //Check accept signal
+    if (netEvent.lNetworkEvents & FD_ACCEPT) {
         if (netEvent.iErrorCode[FD_ACCEPT_BIT] != 0) {
             cerr << "FD_ACCEPT failed, error " << netEvent.iErrorCode[FD_ACCEPT_BIT] << endl;
-            return 1;
+            return -1;
         }
-        if (!acceptConnects()) {
-            cerr << "Failed to accept new connection." << endl;
-            return 1;
+        SOCKET newClient = accept(socketList[0]->socket, nullptr, nullptr);
+        if (newClient == INVALID_SOCKET) {
+            cerr << "Client acception failed, error " << WSAGetLastError() << endl;
+            return -1;
         }
-        cout << "Client " << socketList.size() - 1 << " has connected." << endl;
+        if (socketList.size() == WSA_MAXIMUM_WAIT_EVENTS) {
+            cerr << "Too many connections - closing new socket..." << endl;
+            closesocket(newClient);
+            return 0;
+        }
+        if (!addClientSocket(newClient))
+            return -1;
+        cout << "New client connection accepted. Current number: " << socketList.size() - 1 << endl;
+        return 1;
     }
-    DWORD bRecv = 0, bSend = 0;
-    flag = 0;
-    err = 0;
-    //The client is sending something to the server
-    if (netEvent.lNetworkEvents & FD_READ) {
-        if (netEvent.lNetworkEvents & FD_READ && netEvent.iErrorCode[FD_READ_BIT] != 0) {
-            cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
-            return 1;
-        }
-        //TODO: MAKE CLIENT-SERVER COMMUNICATION SEQUENCE IN HERE
-        //Testing: a multiclient chat server that will relay the message from one client to others
-        socketList[iSock]->dataBuf.buf = buffer;
-        socketList[iSock]->dataBuf.len = 2048;
-        rc = WSARecv(socketList[iSock]->socket, &socketList[iSock]->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
-        if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
-            //If the receive error is not due to out of buffer space
-            cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
-            removeSocket(iSock);
-            return 1;
-        }
-        // if (bRecv == 0) {
-        //     cerr << "Client " << iSock << " disconnected" << endl;
-        //     removeSocket(iSock);
-        //     return 1;
-        // }
-        cout << "Client " << iSock << " sent \"" << buffer << "\"" << endl;
-        for (int i = 1; i < socketList.size(); ++i) {
-            if (i == iSock) {
-                continue;
-            }
-            socketList[i]->dataBuf.buf = buffer;
-            socketList[i]->dataBuf.len = bRecv;
-            rc = WSASend(socketList[i]->socket, &socketList[i]->dataBuf, 1, &bSend, 0, nullptr, nullptr);
-            if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
-                //If the receive error is not due to out of buffer space
-                cerr << "Something went wrong while sending data to client " << i << ", error " << WSAGetLastError() << endl;
-                removeSocket(i);
-                err = 1;
-            }
-            cout << "Echo message back to client " << i << endl;
-        }
-    }
+    return 0;
+}
 
-    //Close signal
-    if (netEvent.lNetworkEvents & FD_CLOSE) {
-        // if (netEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
-        //     cerr << "FD_CLOSE failed with error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
-        //     return 1;
-        // }
-        shutdown(socketList[iSock]->socket, SD_BOTH);
-        if (!removeSocket(iSock)) {
-            cerr << "Can't remove socket " << iSock << endl;
-            return 1;
+bool Server::recvData(int sockIndex, char *buf, size_t dataSize) {
+    //Check whether the server is ready to receive data from client
+    if (netEvent.lNetworkEvents & FD_READ) {
+        if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
+            cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
+            return false;
         }
-        cout << "Socket " << iSock << " disconnected" << endl;
+        if (dataSize == 0) {
+            cerr << "There's nothing to receive! Data size can't be 0!" << endl;
+            return false;
+        }
+        //Set the buffer containing data to receive
+        if (buf == nullptr)
+            socketList[sockIndex]->dataBuf.buf = socketList[sockIndex]->buf;
+        else
+            socketList[sockIndex]->dataBuf.buf = buf;
+        socketList[sockIndex]->dataBuf.len = dataSize;
+        DWORD flag = 0;
+        rc = WSARecv(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &socketList[sockIndex]->byteRecv, &flag, nullptr, nullptr);
+        if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
+            cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+            removeSocket(sockIndex);
+            return false;
+        }
+        return true;
     }
-    return err;
-    //The client is waiting for something from the server
+    return false;
+}
+
+bool Server::sendData(int sockIndex, char *buf, size_t dataSize) {
+    //Check whether the client is ready to receive data from server
+    if (!(netEvent.lNetworkEvents & FD_WRITE))
+        return false;
+    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
+        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
+        return false;
+    }
+    //Set the buffer containing data to send
+    if (dataSize == 0) {
+        cerr << "There's nothing to send! Data size can't be 0!" << endl;
+        return false;
+    }
+    if (buf == nullptr)
+        socketList[sockIndex]->dataBuf.buf = socketList[sockIndex]->buf;
+    else
+        socketList[sockIndex]->dataBuf.buf = buf;
+    socketList[sockIndex]->dataBuf.len = dataSize;
+    int rc = WSASend(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &socketList[sockIndex]->byteSend, 0, nullptr, nullptr);
+    if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
+        cerr << "Something went wrong while sending data to client, error " << WSAGetLastError() << endl;
+        removeSocket(sockIndex);
+        return false;
+    }
+    return true;
+}
+
+int Server::closeConnection(int sockIndex) {
+    if (socketList[sockIndex]->socket == INVALID_SOCKET)
+        return 1;
+    if (netEvent.lNetworkEvents & FD_CLOSE) {
+        if (netEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
+            cerr << "User " << accounts[sockIndex - 1].username << " has been disconnected incorrectly on the client side, error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
+        }
+        cout << "Closing connection with user " << accounts[sockIndex - 1].username << endl;
+        if (!removeSocket(sockIndex)) {
+            cerr << "Failed to remove socket " << sockIndex  << endl;
+            return -1;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int Server::loginClient(int iSock, User& user) {
+    size_t expectedSize = 0;
+    string username, password;
+    //Receive the username and password from client
+    recvData(iSock, (char *)&expectedSize, sizeof(size_t));
+    if (!recvData(iSock, nullptr, expectedSize)) {
+        cerr << "Error while trying to receive username from client " << iSock << endl;
+        return -1;
+    }
+    username.assign(socketList[iSock]->buf, expectedSize);
+    recvData(iSock, (char *)&expectedSize, sizeof(size_t));
+    if (!recvData(iSock, nullptr, expectedSize)) {
+        cerr << "Error while trying to receive password from client " << iSock << endl;
+        return -1;
+    }
+    password.assign(socketList[iSock]->buf, expectedSize);
+    cout << username << endl;
+    cout << password << endl;
+    return 0;
+}
+
+int Server::handleRequest(char rCode, int iSock) {
+    if (rCode == '1') {
+        loginClient(iSock, accounts[iSock - 1]);
+    }
+    return 0;
 }

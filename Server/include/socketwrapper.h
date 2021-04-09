@@ -7,7 +7,6 @@
 #include <iostream>
 #include <string>
 #include <exception>
-#include <memory>
 using namespace std;
 
 const int BUFSIZE = 1024;
@@ -20,8 +19,8 @@ public:
     //Data buffer either points to this object buffer or some externally managed object
     WSABUF dataBuf;
     SOCKET socket;
-    int byteSend;
-    int byteRecv;
+    DWORD byteSend;
+    DWORD byteRecv;
     char lastMsg; //The most recent message from socket
     SocketInfo(SOCKET s);
     SocketInfo(const SocketInfo &sInf);
