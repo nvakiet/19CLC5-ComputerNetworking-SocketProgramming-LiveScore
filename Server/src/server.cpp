@@ -1,6 +1,6 @@
 #include "server.h"
 
-Server::Server(const string& connectString) : db(connectString) {
+Server::Server(const string& connectString, const char* ipAddr) : db(connectString) {
     svInfo = nullptr;
     rc = err = 0;
     //Start winsock
@@ -8,14 +8,14 @@ Server::Server(const string& connectString) : db(connectString) {
     if (rc != 0) {
         throw NetworkException("WSAStartup failed", rc);
     }
-    //Get server address in localhost
+    //Get server address
     addrinfo hints;
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
-    rc = getaddrinfo(nullptr, PORT, &hints, &svInfo);
+    rc = getaddrinfo(ipAddr, PORT, &hints, &svInfo);
     if (rc != 0) {
         throw NetworkException("Can't get server address", rc);
     }
@@ -92,7 +92,7 @@ bool Server::init() {
         return false;
     }
     //Bind the listening socket to the server address
-    rc = bind(socketList[0]->socket, svInfo->ai_addr, (int)svInfo->ai_addrlen);
+    rc = bind(socketList[0]->socket, svInfo->ai_addr, svInfo->ai_addrlen);
     if (rc == SOCKET_ERROR) {
         cerr <<"Unable to bind server address, error " << WSAGetLastError() << endl;
         return false;
@@ -181,12 +181,12 @@ bool Server::recvData(int sockIndex, char *buf, size_t dataSize) {
 
 bool Server::sendData(int sockIndex, char *buf, size_t dataSize) {
     //Check whether the client is ready to receive data from server
-    if (!(netEvent.lNetworkEvents & FD_WRITE))
-        return false;
-    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
-        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
-        return false;
-    }
+    // if (!(netEvent.lNetworkEvents & FD_WRITE))
+    //     return false;
+    // if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
+    //     cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
+    //     return false;
+    // }
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "There's nothing to send! Data size can't be 0!" << endl;
@@ -223,30 +223,46 @@ int Server::closeConnection(int sockIndex) {
     return 0;
 }
 
-int Server::loginClient(int iSock, User& user) {
+bool Server::loginClient(int iSock, User& user) {
     size_t expectedSize = 0;
     string username, password;
     //Receive the username and password from client
     recvData(iSock, (char *)&expectedSize, sizeof(size_t));
     if (!recvData(iSock, nullptr, expectedSize)) {
         cerr << "Error while trying to receive username from client " << iSock << endl;
-        return -1;
+        return false;
     }
     username.assign(socketList[iSock]->buf, expectedSize);
     recvData(iSock, (char *)&expectedSize, sizeof(size_t));
     if (!recvData(iSock, nullptr, expectedSize)) {
         cerr << "Error while trying to receive password from client " << iSock << endl;
-        return -1;
+        return false;
     }
     password.assign(socketList[iSock]->buf, expectedSize);
-    cout << username << endl;
-    cout << password << endl;
-    return 0;
+    //Query the account in the database
+    rc = db.queryUser(username, password, user);
+    //Send the query result to client
+    if (!sendData(iSock, (char*)&rc, sizeof(int))) return false;
+    if (rc == 0) {
+        if (!sendData(iSock, (char*)&user.isAdmin, sizeof(bool)))
+            return false;
+        else
+            return true;
+    }
+    return false;
 }
 
 int Server::handleRequest(char rCode, int iSock) {
-    if (rCode == '1') {
-        loginClient(iSock, accounts[iSock - 1]);
+    if (rCode == Msg::Login) {
+        if (loginClient(iSock, accounts[iSock - 1])) {
+            cout << "User " << accounts[iSock - 1].username << " has logged in at client socket " << iSock << endl;
+            return 0;
+        }
+        else {
+            cerr << "Client socket " << iSock << " failed to login. Server will close this socket." << endl;
+            removeSocket(iSock);
+            return -1;
+        }
     }
     return 0;
 }

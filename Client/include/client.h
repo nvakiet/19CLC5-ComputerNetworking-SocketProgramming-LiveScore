@@ -20,6 +20,7 @@ using namespace std;
 class Client
 {
 private:
+    string usr;
     bool isAdmin;
 protected:
     SOCKET connector;

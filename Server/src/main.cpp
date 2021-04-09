@@ -1,21 +1,34 @@
 #include "server.h"
 
-int main() {
+int main(int argc, char** argv) {
    try {
-      Server server("DRIVER=ODBC Driver 17 for SQL Server;DATABASE=DB_LIVESCORE;SERVER=localhost;Trusted_Connection=Yes");
+      char *bindIP = nullptr;
+      string dbString = "";
+      if (argc > 3) {
+         cerr << "Wrong command line arguments. Usage: [server.exe] [Ip address of server] [Database Connection String]" << endl;
+         return 1;
+      }
+      if (argc >= 2) {
+         bindIP = argv[1];
+      }
+      if (argc == 3) {
+         dbString = argv[2];
+      }
+      Server server(dbString, bindIP);
       server.init();
       while (true) {
          int iSock = server.pollNetEvents();
          if (iSock == -1)
             break;
-         else {
+         else if (iSock == 0) {
             if (server.acceptConnects() == -1)
                break;
-            if (iSock > 0) {
-               char rCode = '0';
-               if (server.recvData(iSock, &rCode, sizeof(char)))
-                  cout << "Client sends " << rCode << endl;
-               server.handleRequest(rCode, iSock);
+         }
+         else {
+            char rCode = '0';
+            server.recvData(iSock, &rCode, sizeof(char));
+            if (server.handleRequest(rCode, iSock) == -1) {
+               cerr << "Failed to execute request code " << rCode << " from client socket " << iSock << endl;
             }
             server.closeConnection(iSock);
          }

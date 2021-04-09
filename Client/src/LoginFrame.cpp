@@ -160,6 +160,7 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
         {
             // exception window : Login Failed
             ErrorMsg("Failed to Login!!");
+            client->closeConnection();
         }
     }
     else

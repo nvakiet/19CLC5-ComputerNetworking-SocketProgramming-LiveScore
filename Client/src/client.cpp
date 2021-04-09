@@ -23,6 +23,9 @@ Client::~Client() {
 }
 
 bool Client::connectTo(const string& svIP) {
+    //If the socket is already connected
+    if (connector != INVALID_SOCKET)
+        return true;
     int rc = 0;
     addrinfo hints, *ptr = nullptr;
     ZeroMemory(&hints, sizeof(hints)) ;
@@ -95,12 +98,12 @@ bool Client::hasMsgFromServer() const {
 
 bool Client::sendData(char *buf, size_t dataSize, DWORD& bSent) {
     //Check whether the server is ready to receive data from client
-    // if (!(netEvent.lNetworkEvents & FD_WRITE))
-    //     return false;
-    // if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
-    //     cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
-    //     return false;
-    // }
+    if (!(netEvent.lNetworkEvents & FD_WRITE))
+        return false;
+    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
+        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
+        return false;
+    }
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "There's nothing to send! Data size can't be 0!" << endl;
@@ -174,20 +177,40 @@ int Client::closeConnection() {
 
 bool Client::login(const string &username, const string &password) {
     char rCode = '1';
-    DWORD bSend = 0;
+    DWORD bSend = 0, bRecv = 0;
     //Send command
     if (!sendData(&rCode, sizeof(char), bSend)) return false;
     //Send username
-    size_t expectedSize = username.size();
+    size_t expectedSize = username.size() + 1;
     if (!sendData((char *)&expectedSize, sizeof(size_t), bSend)) return false;
     if (!sendData((char *)username.c_str(), expectedSize, bSend)) return false;
     //Send password
-    expectedSize = password.size();
+    string encrypted(sha256(password));
+    expectedSize = encrypted.size() + 1;
     if (!sendData((char *)&expectedSize, sizeof(size_t), bSend)) return false;
-    if (!sendData((char *)password.c_str(), expectedSize, bSend)) return false;
-    cout << username << endl;
-    cout << password << endl;
-    return true;
+    if (!sendData((char *)encrypted.c_str(), expectedSize, bSend)) return false;
+    //Receive login results from server
+    int rc = -100;
+    if (recvData((char*)&rc, sizeof(int), bRecv) && rc == 0) {
+        //Receive account admin rights
+        if (!recvData((char*)&isAdmin, sizeof(bool), bRecv))
+            return false;
+        //PASS THIS COUT TO A NOTICE WINDOW
+        cout << "Login success, welcome " << username << endl;
+        usr = username;
+        return true;
+    }
+    else if (rc == 1) {
+        //PASS THIS COUT TO A NOTICE WINDOW
+        cout << "User " << username << " already logged in." << endl;
+        return false;
+    }
+    else if (rc == -1) {
+        //PASS THIS COUT TO A NOTICE WINDOW
+        cout << "Wrong username or password. Try again." << endl;
+        return false;
+    }
+    return false;
 }
 
 bool Client::registerAcc(const string &username, const string &password) {

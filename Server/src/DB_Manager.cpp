@@ -21,7 +21,8 @@ int DB_Manager::queryUser(const string &username, const string &password, User& 
     }
     else {
         //Change user status to logged in
-        sql << "UPDATE USERS SET ISLOGIN = 'Y' WHERE USR = :username", use(username);
+        char value = 'Y';
+        sql << "UPDATE USERS SET ISLOGIN = :value WHERE USR = :username", use(value), use(username);
     }
 
     cout << "User " << username << " is logging in." << endl;
@@ -31,10 +32,12 @@ int DB_Manager::queryUser(const string &username, const string &password, User& 
 void DB_Manager::logoutUser(const string &username) {
     if (username.empty())
         return;
-    sql << "UPDATE USERS SET ISLOGIN = 'N' WHERE USR = :username", use(username);
+    char value = 'N';
+    sql << "UPDATE USERS SET ISLOGIN = :value WHERE USR = :username", use(value), use(username);
     cout << "User " << username << " has logged out." << endl;
 }
 
 void DB_Manager::logoutAll() {
-    sql << "UPDATE USERS SET ISLOGIN = 'N'";
+    char value = 'N';
+    sql << "UPDATE USERS SET ISLOGIN = :value", use(value);
 }

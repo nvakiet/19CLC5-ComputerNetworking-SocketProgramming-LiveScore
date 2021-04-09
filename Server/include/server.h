@@ -36,9 +36,9 @@ private:
     bool removeSocket(int index);
 public:
     //List of all messages the server can handle from clients
-    //enum class Msg {Idle = '0', Login = '1', Register = '2'};
+    enum Msg {Login = '1', Register = '2'};
     //Start Winsock and get server address, construct LiveScore Database connector and GUI
-    Server(const string& connectString);
+    Server(const string& connectString, const char* ipAddr = nullptr);
     //Shutdown server, free address list
     ~Server();
     //Create & bind listen socket, begin listening
@@ -60,8 +60,8 @@ public:
     //Return: -1: Error while handling request/invalid request; 0: Request is done successfully; 1: Request is done and makes change to server data/requires feedbacks to client
     int handleRequest(char rCode, int iSock);
     //Perform login operation with a client socket
-    //On success, will return the user info, server must send this info back to client
-    int loginClient(int iSock, User& user);
+    //On success, will return the user info, server must send admin status info back to client
+    bool loginClient(int iSock, User& user);
 };
 
 #endif
