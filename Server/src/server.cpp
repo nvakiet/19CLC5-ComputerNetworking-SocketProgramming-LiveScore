@@ -152,31 +152,30 @@ int Server::acceptConnects() {
 
 bool Server::recvData(int sockIndex, char *buf, size_t dataSize) {
     //Check whether the server is ready to receive data from client
-    if (netEvent.lNetworkEvents & FD_READ) {
-        if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
-            cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
-            return false;
-        }
-        if (dataSize == 0) {
-            cerr << "There's nothing to receive! Data size can't be 0!" << endl;
-            return false;
-        }
-        //Set the buffer containing data to receive
-        if (buf == nullptr)
-            socketList[sockIndex]->dataBuf.buf = socketList[sockIndex]->buf;
-        else
-            socketList[sockIndex]->dataBuf.buf = buf;
-        socketList[sockIndex]->dataBuf.len = dataSize;
-        DWORD flag = 0;
-        rc = WSARecv(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &socketList[sockIndex]->byteRecv, &flag, nullptr, nullptr);
-        if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
-            cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
-            removeSocket(sockIndex);
-            return false;
-        }
-        return true;
+    // if (!(netEvent.lNetworkEvents & FD_READ))
+    //     return false;
+    // if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
+    //     cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
+    //     return false;
+    // }
+    //Set the buffer containing data to receive
+    if (dataSize == 0) {
+        cerr << "There's nothing to receive! Data size can't be 0!" << endl;
+        return false;
     }
-    return false;
+    if (buf == nullptr)
+        socketList[sockIndex]->dataBuf.buf = socketList[sockIndex]->buf;
+    else
+        socketList[sockIndex]->dataBuf.buf = buf;
+    socketList[sockIndex]->dataBuf.len = dataSize;
+    DWORD flag = 0;
+    rc = WSARecv(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &socketList[sockIndex]->byteRecv, &flag, nullptr, nullptr);
+    if (rc == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) {
+        cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+        removeSocket(sockIndex);
+        return false;
+    }
+    return true;
 }
 
 bool Server::sendData(int sockIndex, char *buf, size_t dataSize) {

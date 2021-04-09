@@ -98,12 +98,12 @@ bool Client::hasMsgFromServer() const {
 
 bool Client::sendData(char *buf, size_t dataSize, DWORD& bSent) {
     //Check whether the server is ready to receive data from client
-    if (!(netEvent.lNetworkEvents & FD_WRITE))
-        return false;
-    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
-        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
-        return false;
-    }
+    // if (!(netEvent.lNetworkEvents & FD_WRITE))
+    //     return false;
+    // if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
+    //     cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
+    //     return false;
+    // }
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "There's nothing to send! Data size can't be 0!" << endl;
@@ -128,12 +128,12 @@ bool Client::sendData(char *buf, size_t dataSize, DWORD& bSent) {
 
 bool Client::recvData(char *retBuf, size_t retSize, DWORD& bRecv) {
     //Check whether the client is ready to receive data from server
-    if (!(netEvent.lNetworkEvents & FD_READ))
-        return false;
-    if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
-        cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
-        return false;
-    }
+    // if (!(netEvent.lNetworkEvents & FD_READ))
+    //     return false;
+    // if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
+    //     cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
+    //     return false;
+    // }
     //Set the buffer containing data to receive
     if (retSize == 0) {
         cerr << "There's nothing to receive! Data size can't be 0!" << endl;
