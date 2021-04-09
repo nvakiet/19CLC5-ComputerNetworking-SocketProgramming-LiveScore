@@ -78,6 +78,8 @@ bool Client::connectTo(const string& svIP) {
 }
 
 bool Client::pollNetworkEvents() {
+    if (connector == INVALID_SOCKET || handler == WSA_INVALID_EVENT)
+        return false;
     int rc = 0;
     rc = WSAEnumNetworkEvents(connector, handler, &netEvent);
     if (rc == SOCKET_ERROR) {
@@ -122,16 +124,16 @@ bool Client::sendData(char *buf, size_t dataSize, DWORD& bSent) {
 }
 
 bool Client::recvData(char *retBuf, size_t retSize, DWORD& bRecv) {
-    //Check whether the server is ready to receive data from client
+    //Check whether the client is ready to receive data from server
     if (!(netEvent.lNetworkEvents & FD_READ))
         return false;
     if (netEvent.iErrorCode[FD_READ_BIT] != 0) {
         cerr << "FD_READ failed, error " << netEvent.iErrorCode[FD_READ_BIT] << endl;
         return false;
     }
-    //Set the buffer containing data to send
+    //Set the buffer containing data to receive
     if (retSize == 0) {
-        cerr << "There's nothing to send! Data size can't be 0!" << endl;
+        cerr << "There's nothing to receive! Data size can't be 0!" << endl;
         return false;
     }
     if (retBuf == nullptr)
@@ -171,6 +173,20 @@ int Client::closeConnection() {
 }
 
 bool Client::login(const string &username, const string &password) {
+    cout << username << endl;
+    cout << password << endl;
+    char rCode = '1';
+    DWORD bSend = 0;
+    //Send command
+    sendData(&rCode, sizeof(char), bSend);
+    //Send username
+    size_t expectedSize = username.size() + 1;
+    sendData((char *)&expectedSize, sizeof(size_t), bSend);
+    sendData((char *)username.c_str(), expectedSize, bSend);
+    //Send password
+    expectedSize = password.size() + 1;
+    sendData((char *)&expectedSize, sizeof(size_t), bSend);
+    sendData((char *)password.c_str(), expectedSize, bSend);
     return true;
 }
 
