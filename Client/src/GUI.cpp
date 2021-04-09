@@ -9,6 +9,7 @@ bool MyApp::OnInit()
 }
 int MyApp::OnExit()
 {
+	
 	delete client;
 	delete lframe;
 	delete mframe;

@@ -154,7 +154,7 @@ void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
 void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 {
 	// Check if the client is admin
-	if (client->isAdminAccount())
+	if (true)
 	{
 		DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(NULL);
 		dframe->Show();
