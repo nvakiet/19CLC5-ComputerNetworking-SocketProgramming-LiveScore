@@ -135,6 +135,7 @@ private:
 	DetailFrame_ForClient *df_client;
 public:
     bool OnInit();
+	void showMainFrame();
     int OnExit();
     //CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
 };
