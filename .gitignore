@@ -5,3 +5,5 @@ WxWidgets
 *.json
 *.o
 *.exe
+Server/output/main.exe
+Client/output/main.exe

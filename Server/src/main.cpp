@@ -1,19 +1,47 @@
 #include "server.h"
-
-int main() {
+#include <cstring>
+int main(int argc, char** argv) {
    try {
-      Server server;
-      server.init(); 
+      char *bindIP = nullptr;
+      string dbString = "";
+      if (argc > 3) {
+         cerr << "Wrong command line arguments. Usage: [server.exe] [Ip address of server] [Database Connection String]" << endl;
+         return 1;
+      }
+      if (argc >= 2) {
+         bindIP = argv[1];
+      }
+      if (argc == 3) {
+         int argvLen = strlen(argv[2]);
+         dbString.assign(argv[2], argv[2] + argvLen);
+      }
+      Server server(dbString, bindIP);
+      server.init();
       while (true) {
-         int rc = server.handleNetEvents();
-         if (rc != 0 && rc != 1) {
-            cerr << "Something went wrong while handling network events!" << endl;
+         int iSock = server.pollNetEvents();
+         if (iSock == -1)
             break;
+         if (server.acceptConnects() == -1)
+            break;
+         if (server.canRecv()) {
+            char rCode = '0';
+            server.recvData(iSock, &rCode, sizeof(char));
+            if (server.handleRequest(rCode, iSock) == -1) {
+               cerr << "Failed to execute request code " << rCode << " from client socket " << iSock << endl;
+               continue;
+            }   
          }
+         if (server.canSend()) {
+            if (server.handleFeedback(iSock) == -1) {
+               cerr << "Failed to send feedback to client socket number " << iSock << endl;
+               continue;
+            }
+         }
+         server.closeConnection(iSock);
       }
    }
-   catch (const NetworkException& e) {
-      cerr << e.what() << endl;
+   catch (const exception& e) {
+      cerr << "Error: " << e.what() << endl;
    }
    return 0;
 }
