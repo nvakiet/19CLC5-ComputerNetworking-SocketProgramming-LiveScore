@@ -3,6 +3,7 @@
 #include <wx/wxprec.h>
 #include <wx/grid.h>
 #include <iostream>
+#include <thread>
 #include "client.h"
 #include <wx/string.h>
 #ifndef WX_PRECOMP
@@ -133,10 +134,13 @@ private:
     MainFrame *mframe;
 	DetailFrame_ForAdmin *df_admin;
 	DetailFrame_ForClient *df_client;
+	thread *t;
+	void socketHandling();
+
 public:
     bool OnInit();
 	void showMainFrame();
-    int OnExit();
+    int OnExit(wxCloseEvent& event);
     //CẦN HÀM ONEXIT ĐỂ KHI THOÁT CHƯƠNG TRÌNH THÌ HIỆN THÔNG BÁO CÓ MUỐN THOÁT VÀ TẮT CLASS CLIENT
 };
 DECLARE_APP(MyApp);

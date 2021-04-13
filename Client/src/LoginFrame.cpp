@@ -150,8 +150,13 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
     // mframe->Show(true);
     if (client->connectTo(inputServerText->GetValue().ToStdString()))
     {
-        if (client->login(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString()))
+        string notif;
+        if (client->login(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString(), notif))
         {
+            ErrorMsg(notif);
+            if (client->isAdminAccount()) {
+                ErrorMsg("Admin mode activated!");
+            }
             this->Close();
             MainFrame *mframe = new MainFrame(client, NULL);
             mframe->Show(true);
@@ -159,8 +164,8 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
         else
         {
             // exception window : Login Failed
-            ErrorMsg("Failed to Login!!");
-            client->closeConnection();
+            ErrorMsg(notif);
+            //client->closeConnection();
         }
     }
     else
@@ -188,6 +193,6 @@ void LoginFrame::OnRegisterClick(wxCommandEvent &event)
 }
 void LoginFrame::ErrorMsg(wxString msg)
 {
-    wxMessageBox(msg, wxT("Error Message"),
+    wxMessageBox(msg, wxT("Message"),
                  wxOK | wxICON_INFORMATION, this);
 }

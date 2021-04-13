@@ -7,8 +7,8 @@ int DB_Manager::queryUser(const string &username, const string &password, User& 
         cerr << "Query for user account failed because username and password can't be empty" << endl;
         return -1;
     }
-    char loginStatus;
-    sql << "SELECT USR, ISLOGIN, ISADMIN FROM USERS WHERE USR = :username AND PWD = :password", into(user.username), into(loginStatus), into(user.isAdmin), use(username), use(password);
+    char loginStatus, admin;
+    sql << "SELECT USR, ISLOGIN, ISADMIN FROM USERS WHERE USR = :username AND PWD = :password", into(user.username), into(loginStatus), into(admin), use(username), use(password);
     //If can't find the user with input password
     if (!sql.got_data()) {
         cerr << "User \"" << username << "\" login failed." << endl;
@@ -26,6 +26,11 @@ int DB_Manager::queryUser(const string &username, const string &password, User& 
     }
 
     cout << "User " << username << " is logging in." << endl;
+    if (admin == 'Y') {
+        cout << username << " is an admin." << endl;
+        user.isAdmin = true;
+    }
+    else user.isAdmin = false;
     return 0;
 }
 
