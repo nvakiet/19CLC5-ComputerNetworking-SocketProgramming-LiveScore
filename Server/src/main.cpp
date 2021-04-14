@@ -1,5 +1,5 @@
 #include "server.h"
-
+#include <cstring>
 int main(int argc, char** argv) {
    try {
       char *bindIP = nullptr;
@@ -12,7 +12,8 @@ int main(int argc, char** argv) {
          bindIP = argv[1];
       }
       if (argc == 3) {
-         dbString = argv[2];
+         int argvLen = strlen(argv[2]);
+         dbString.assign(argv[2], argv[2] + argvLen);
       }
       Server server(dbString, bindIP);
       server.init();
@@ -20,23 +21,24 @@ int main(int argc, char** argv) {
          int iSock = server.pollNetEvents();
          if (iSock == -1)
             break;
-         else if (iSock == 0) {
-            if (server.acceptConnects() == -1)
-               break;
-         }
-         else {
+         if (server.acceptConnects() == -1)
+            break;
+         if (server.canRecv()) {
             char rCode = '0';
             server.recvData(iSock, &rCode, sizeof(char));
             if (server.handleRequest(rCode, iSock) == -1) {
                cerr << "Failed to execute request code " << rCode << " from client socket " << iSock << endl;
-            }
-            server.closeConnection(iSock);
+               continue;
+            }   
          }
-
+         if (server.canSend()) {
+            if (server.handleFeedback(iSock) == -1) {
+               cerr << "Failed to send feedback to client socket number " << iSock << endl;
+               continue;
+            }
+         }
+         server.closeConnection(iSock);
       }
-   }
-   catch (const NetworkException& e) {
-      cerr << e.what() << endl;
    }
    catch (const exception& e) {
       cerr << "Error: " << e.what() << endl;

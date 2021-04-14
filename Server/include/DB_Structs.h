@@ -10,7 +10,7 @@ using namespace std;
 
 struct User {
     string username;
-    char isAdmin; //'Y' = admin account, 'N' = normal account
+    bool isAdmin;
 };
 
 struct MatchInfo{

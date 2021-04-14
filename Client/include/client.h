@@ -12,6 +12,8 @@
 #include <iostream>
 #include <thread>
 #include "sha256.h" //For password enscription
+#include "socketwrapper.h"
+#include "DB_Structs.h"
 using namespace std;
 
 #define DEFAULT_BUFLEN 1024
@@ -19,20 +21,16 @@ using namespace std;
 
 class Client
 {
-private:
-    string usr;
-    bool isAdmin;
 protected:
-    SOCKET connector;
     WSAEVENT handler;
+    SocketInfo* connector;
     WSANETWORKEVENTS netEvent;
-    //Buffer for sending requests to server/receiving feedbacks from server
-    char buffer[DEFAULT_BUFLEN];
-    WSABUF dataBuf;
     addrinfo *conInfo;
     WSADATA wsaData;
 
 public:
+    User account;
+    int result;
     //Start winsock
     Client();
     //Log out the account, close socket and clean up winsock, connection infos
@@ -41,32 +39,28 @@ public:
     bool connectTo(const string &svIP);
     //Check for network events from the connection
     bool pollNetworkEvents();
-    //Check if server is sending some message to the client
-    bool hasMsgFromServer() const;
-    //Send data to the server, input nullptr = using client's default buffer, return number of bytes sent
-    bool sendData(char *buf, size_t dataSize, DWORD &bSent);
-    //Receive data from server, input nullptr = using client's default buffer, return number of bytes received
-    bool recvData(char *retBuf, size_t retSize, DWORD &bRecv);
-    //If the server disconnected, close the socket and set it to invalid to prevent other functions from working
-    //Return: 1 = Server or Client has shutdown connection (could be due to some errors), 0 = Connecting normally, -1 = Error when trying to close connection
-    int closeConnection();
+    //Check if the FD_READ is triggered, -1 = error, 0 = not triggered, 1 = triggered
+    int canRecv();
+    //Check if the FD_WRITE is triggered, -1 = error, 0 = not triggered, 1 = triggered
+    int canSend();
+    //Receive message from client, if buf = null, function uses default buffer of socketwrapper
+    int recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    //Send data to client, if buf = null, function uses default buffer of socketwrapper
+    int sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    //Check if can close connection
+    bool canClose();
+    //Close connection
+    void closeConnection();
     //Log in to the server
-    bool login(const string &username, const string &password);
+    bool login(const string &username, const string &password,string& notif);
     //Register a new account to the server
     bool registerAcc(const string &username, const string &password);
     // Check if client 
     bool isAdminAccount();
-
-};
-
-class NetworkException : public exception
-{
-private:
-    string errString;
-
-public:
-    NetworkException(const string &err, int code);
-    const char *what() const noexcept override;
+    // Set Msg received from server
+    void setMsg(char c);
+    // Get the recorded message
+    char getMsg();
 };
 
 #endif

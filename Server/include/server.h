@@ -33,7 +33,7 @@ private:
     //Add a new client socket to the server
     bool addClientSocket(SOCKET newClient);
     //Remove a socket from the server
-    bool removeSocket(int index);
+    bool removeSocket(int index, bool willLogout = true);
 public:
     //List of all messages the server can handle from clients
     enum Msg {Login = '1', Register = '2'};
@@ -49,16 +49,21 @@ public:
     //Accept new client connections
     //Return -1: error, 0: no accept event, 1: success accept
     int acceptConnects();
+    //Check if the FD_READ is triggered, -1 = error, 0 = not triggered, 1 = triggered
+    int canRecv();
+    //Check if the FD_WRITE is triggered, -1 = error, 0 = not triggered, 1 = triggered
+    int canSend();
     //Receive message from client, if buf = null, function uses default buffer of socketwrapper
-    bool recvData(int sockIndex, char *buf = nullptr, size_t dataSize = BUFSIZE);
+    int recvData(int sockIndex, char *buf = nullptr, size_t dataSize = BUFSIZE);
     //Send data to client, if buf = null, function uses default buffer of socketwrapper
-    bool sendData(int sockIndex, char *buf = nullptr, size_t dataSize = BUFSIZE);
+    int sendData(int sockIndex, char *buf = nullptr, size_t dataSize = BUFSIZE);
     //Close client socket if the client closes its connection
     //Return 1: the socket is closed; 0: No signal to close; -1: Error while trying to close
     int closeConnection(int sockIndex);
     //Handle requests from client
-    //Return: -1: Error while handling request/invalid request; 0: Request is done successfully; 1: Request is done and makes change to server data/requires feedbacks to client
-    int handleRequest(char rCode, int iSock);
+    bool handleRequest(char rCode, int iSock);
+    //Handle sending feedback to clients
+    bool handleFeedback(int iSock);
     //Perform login operation with a client socket
     //On success, will return the user info, server must send admin status info back to client
     bool loginClient(int iSock, User& user);
