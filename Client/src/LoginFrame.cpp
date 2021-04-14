@@ -157,8 +157,8 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
             if (client->isAdminAccount()) {
                 ErrorMsg("Admin mode activated!");
             }
-            this->Close();
             MainFrame *mframe = new MainFrame(client, NULL);
+            this->Close();
             mframe->Show(true);
         }
         else
@@ -177,14 +177,10 @@ void LoginFrame::OnRegisterClick(wxCommandEvent &event)
 {
     if (client->connectTo(inputServerText->GetValue().ToStdString()))
     {
-        if (client->registerAcc(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString()))
-        {
-            event.Skip();
-        }
-        else
-        {
-            ErrorMsg("Failed to Register!!");
-        }
+        string notif;
+        bool result = client->registerAcc(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString(), notif);
+        ErrorMsg(notif);
+        //client->closeConnection();
     }
     else
     {

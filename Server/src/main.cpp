@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
       Server server(dbString, bindIP);
       server.init();
       while (true) {
+         int result = -100;
          int iSock = server.pollNetEvents();
          if (iSock == -1)
             break;
@@ -26,13 +27,14 @@ int main(int argc, char** argv) {
          if (server.canRecv()) {
             char rCode = '0';
             server.recvData(iSock, &rCode, sizeof(char));
-            if (server.handleRequest(rCode, iSock) == -1) {
+            result = server.handleRequest(rCode, iSock);
+            if (result == -1) {
                cerr << "Failed to execute request code " << rCode << " from client socket " << iSock << endl;
                continue;
             }   
          }
-         if (server.canSend()) {
-            if (server.handleFeedback(iSock) == -1) {
+         if (result == 1) {
+            if (!server.handleFeedback(iSock)) {
                cerr << "Failed to send feedback to client socket number " << iSock << endl;
                continue;
             }
