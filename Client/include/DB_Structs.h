@@ -12,5 +12,20 @@ struct User {
     string username;
     bool isAdmin;
 };
-
+struct MatchInfo{
+    private:
+        string id;
+        string time;
+        string teamA;
+        string teamB;
+        string Score;
+    public: 
+        MatchInfo(string response);
+        string createArequest();
+        string getID();
+        string getTime();
+        string getNameTeamA();
+        string getNameTeamB();
+        string getScore();
+};
 #endif

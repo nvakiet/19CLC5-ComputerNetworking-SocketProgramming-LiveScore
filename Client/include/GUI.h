@@ -4,6 +4,7 @@
 #include <wx/grid.h>
 #include <iostream>
 #include <thread>
+#include<vector>
 #include "client.h"
 #include <wx/string.h>
 #ifndef WX_PRECOMP
@@ -60,7 +61,7 @@ class MainFrame : public wxFrame
 		virtual void OnRefreshClick( wxCommandEvent& event );
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
 		virtual void OnSearchDetailsDClick( wxGridEvent& event );
-		virtual void InitiTableMatch();
+		virtual void InitiTableMatch(vector<MatchInfo> InputListMatch);
 	
 	public:
 		
