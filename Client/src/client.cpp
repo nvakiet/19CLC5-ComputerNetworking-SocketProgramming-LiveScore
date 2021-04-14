@@ -107,7 +107,7 @@ int Client::canRecv() {
 }
 
 
-int Client::recvData(char *buf, size_t dataSize) {
+int Client::recvData(char *buf, size_t dataSize, bool isContinuous) {
     //Set the buffer for receiving
     if (dataSize == 0) {
         cerr << "Can't receive data size 0." << endl;
@@ -115,6 +115,9 @@ int Client::recvData(char *buf, size_t dataSize) {
     }
     DWORD flag = 0;
     DWORD bRecv = 0;
+    if (isContinuous) {
+        connector->byteRecv = 0;
+    }
     if (buf == nullptr) {
         if (!connector->buf.empty())
             connector->appendBuffer(nullptr, dataSize);
@@ -126,17 +129,22 @@ int Client::recvData(char *buf, size_t dataSize) {
         connector->dataBuf.len = dataSize;
     }
     //Receive data into socket buffer
-    int rc = WSARecv(connector->socket, &connector->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK) {
-            cerr << "Something went wrong while receiving data from server, error " << WSAGetLastError() << endl;
-            closeConnection();
-            return -1;
-        }
-        else //If WSAEWOULDBLOCK, wait for FD_READ event to call this function again
-            return 0;
-    }
-    connector->byteRecv += bRecv;
+    do {
+        int rc = WSARecv(connector->socket, &connector->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
+        if (rc == SOCKET_ERROR) {
+            if (WSAGetLastError() != WSAEWOULDBLOCK) {
+                cerr << "Something went wrong while receiving data from server, error " << WSAGetLastError() << endl;
+                closeConnection();
+                return -1;
+            }
+            else //If WSAEWOULDBLOCK, wait for FD_READ event to call this function again
+                return 0;
+        } 
+        connector->byteRecv += bRecv;
+        connector->dataBuf.buf += bRecv;
+        connector->dataBuf.len -= bRecv;
+    } while (isContinuous && connector->byteRecv < dataSize);
+
     return 1;
 }
 
@@ -221,7 +229,8 @@ bool Client::login(const string &username, const string &password, string& notif
     int check = 0;
     do {
         check = canRecv();
-        if (check == 1) {
+        if (check == 1 || connector->lastMsg != '\0') {
+            cout << "Result = " << result << endl;
             if (result == 0) {
                 //Receive account admin rights
                 //connector->extractBuffer((char*)&(account.isAdmin), sizeof(bool));

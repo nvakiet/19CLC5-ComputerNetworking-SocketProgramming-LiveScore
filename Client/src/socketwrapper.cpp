@@ -1,6 +1,6 @@
 #include "socketwrapper.h"
 
-SocketInfo::SocketInfo(SOCKET s) : socket(s), byteRecv(0), byteSend(0), lastMsg('0') {
+SocketInfo::SocketInfo(SOCKET s) : socket(s), byteRecv(0), byteSend(0), lastMsg('\0') {
     buf.reserve(BUFSIZE);
     dataBuf.buf = nullptr;
     dataBuf.len = 0;

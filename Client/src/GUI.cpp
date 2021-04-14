@@ -38,15 +38,16 @@ void MyApp::socketHandling() {
             char rCode = '0';
             int step = 0;
             while (step == 0)
-                step += client->recvData(&rCode, sizeof(char));
+                step += client->recvData(&rCode, sizeof(char), true);
             switch (rCode) {
                 case '1':
                     //The server send back login result
+                    client->result = -100;
                     while (step == 1)
-                        step += client->recvData((char*)&client->result, 4);
+                        step += client->recvData((char*)&(client->result), sizeof(int), true);
                     if (client->result == 0) {
                         while (step == 2)
-                            step += client->recvData((char*)&(client->account.isAdmin), sizeof(bool));
+                            step += client->recvData((char*)&(client->account.isAdmin), sizeof(bool), true);
                     }
                     if ((client->result == 0 && step != 3) || ((client->result == -1 || client->result == 1) && step != 2)) {
                         cerr << "Failed to receive login result" << endl;
