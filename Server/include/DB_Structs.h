@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include<time.h>
 
 using namespace std;
 
@@ -16,12 +17,18 @@ struct User {
 struct MatchInfo{
     private:
         string id;
-        string time;
+        string timeMatch;
         string teamA;
         string teamB;
-        string Score;
+        unsigned int scoreA;
+        unsigned int scoreB;
     public: 
-        MatchInfo(string response);
-        string createArequest();
+        MatchInfo( vector<char> response);
+        void toByteStream(vector<char>&result);
+};
+struct ListMatch{
+    private:
+        vector<MatchInfo> lstMatch;
+    public:
 };
 #endif

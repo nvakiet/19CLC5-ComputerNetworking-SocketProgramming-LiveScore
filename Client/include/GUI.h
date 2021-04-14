@@ -61,7 +61,7 @@ class MainFrame : public wxFrame
 		virtual void OnRefreshClick( wxCommandEvent& event );
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
 		virtual void OnSearchDetailsDClick( wxGridEvent& event );
-		virtual void InitiTableMatch(vector<MatchInfo> InputListMatch);
+		// virtual void InitiTableMatch(vector<MatchInfo> InputListMatch);
 	
 	public:
 		
