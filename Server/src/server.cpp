@@ -276,7 +276,7 @@ bool Server::loginClient(int iSock, User& user) {
     }
     //Query the account in the database
     rc = db.queryUser(username, password, user);
-    socketList[iSock]->appendBuffer((char*)&rc, sizeof(int));
+    socketList[iSock]->setBuffer((char*)&rc, sizeof(int));
     return true;
 }
 
@@ -284,7 +284,6 @@ bool Server::handleRequest(char rCode, int iSock) {
     if (rCode == Msg::Login) {
         socketList[iSock]->lastMsg = rCode;
         if (loginClient(iSock, accounts[iSock - 1])) {
-            cout << "User " << accounts[iSock - 1].username << " is logging in at client socket " << iSock << endl;
             return 1;
         }
         else {

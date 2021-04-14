@@ -44,7 +44,7 @@ public:
     //Check if the FD_WRITE is triggered, -1 = error, 0 = not triggered, 1 = triggered
     int canSend();
     //Receive message from client, if buf = null, function uses default buffer of socketwrapper
-    int recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    int recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = false);
     //Send data to client, if buf = null, function uses default buffer of socketwrapper
     int sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
     //Check if can close connection
