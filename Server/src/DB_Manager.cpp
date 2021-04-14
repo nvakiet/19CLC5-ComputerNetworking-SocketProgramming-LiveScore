@@ -34,6 +34,25 @@ int DB_Manager::queryUser(const string &username, const string &password, User& 
     return 0;
 }
 
+int DB_Manager::insertUser(const string &username, const string &password) {
+    if (username.empty() || password.empty()) {
+        cerr << "Query for user account failed because username and password can't be empty" << endl;
+        return -1;
+    }
+    string dbUsername;
+    sql << "SELECT USR FROM USERS WHERE USR = :username", into(dbUsername), use(username);
+    //If the user exists in database
+    if (sql.got_data()) {
+        cerr << "Can't register account " << username << " because it already exists." << endl;
+        return 1;
+    }
+    char loginStatus = 'N', isAdmin = 'N';
+    //Insert a new account into database
+    sql << "INSERT INTO USERS VALUES(:username, :password, :loginStatus, :isAdmin)", use(username), use(password), use(loginStatus), use(isAdmin);
+    cout << "Account " << username << " has been registered successfully." << endl;
+    return 0;
+}
+
 void DB_Manager::logoutUser(const string &username) {
     if (username.empty())
         return;

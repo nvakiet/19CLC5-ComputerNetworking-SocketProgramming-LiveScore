@@ -31,6 +31,8 @@ protected:
 public:
     User account;
     int result;
+    //List of all messages the server can handle from clients
+    enum Msg {Login = '1', Register = '2'};
     //Start winsock
     Client();
     //Log out the account, close socket and clean up winsock, connection infos
@@ -54,7 +56,7 @@ public:
     //Log in to the server
     bool login(const string &username, const string &password,string& notif);
     //Register a new account to the server
-    bool registerAcc(const string &username, const string &password);
+    bool registerAcc(const string &username, const string &password, string& notif);
     // Check if client 
     bool isAdminAccount();
     // Set Msg received from server

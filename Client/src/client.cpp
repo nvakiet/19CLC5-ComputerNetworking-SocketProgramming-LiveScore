@@ -87,6 +87,11 @@ bool Client::pollNetworkEvents() {
     if (connector == nullptr || connector->socket == INVALID_SOCKET || handler == WSA_INVALID_EVENT)
         return false;
     int rc = 0;
+    rc = WSAEventSelect(connector->socket, handler, FD_READ | FD_WRITE | FD_CLOSE);
+    if (rc == SOCKET_ERROR) {
+        cerr << "WSAEventSelect() failed, error " << WSAGetLastError() << endl;
+        return false;
+    }
     rc = WSAEnumNetworkEvents(connector->socket, handler, &netEvent);
     if (rc == SOCKET_ERROR) {
         cerr << "Can't enumerate network events, error " << WSAGetLastError() << endl;
@@ -199,7 +204,7 @@ bool Client::canClose() {
 }
 
 void Client::closeConnection() {
-    shutdown(connector->socket, SD_BOTH);
+    shutdown(connector->socket, SD_SEND);
     closesocket(connector->socket);
     WSACloseEvent(handler);
     connector->socket = INVALID_SOCKET;
@@ -207,8 +212,8 @@ void Client::closeConnection() {
 }
 
 bool Client::login(const string &username, const string &password, string& notif) {
-    char rCode = '1';
-    DWORD bSend = 0;
+    char rCode = Msg::Login;
+
     int step = 0;
     //Send command
     step += sendData(&rCode, sizeof(char));
@@ -232,31 +237,72 @@ bool Client::login(const string &username, const string &password, string& notif
         if (check == 1 || connector->lastMsg != '\0') {
             cout << "Result = " << result << endl;
             if (result == 0) {
-                //Receive account admin rights
-                //connector->extractBuffer((char*)&(account.isAdmin), sizeof(bool));
-                //PASS THIS COUT TO A NOTICE WINDOW
                 notif = "Login success, welcome " + username;
                 account.username = username;
+                connector->lastMsg = '\0';
                 return true;
             }
             else if (result == 1) {
-                //PASS THIS COUT TO A NOTICE WINDOW
                 notif = "User " + username + " already logged in";
+                connector->lastMsg = '\0';
                 return false;
             }
             else if (result == -1) {
-                //PASS THIS COUT TO A NOTICE WINDOW
                 notif = "Wrong username or password. Try again.";
+                connector->lastMsg = '\0';
                 return false;
             }
         }
-    } while (check != 1 && connector->socket != INVALID_SOCKET);
+    } while (check != 1 && connector->lastMsg == '\0' && connector->socket != INVALID_SOCKET);
     notif = "Unable to retrieve login result. Login Failed!";
+    connector->lastMsg = '\0';
     return false;
 }
 
-bool Client::registerAcc(const string &username, const string &password) {
-    return true;
+bool Client::registerAcc(const string &username, const string &password, string& notif) {
+    if (username.empty() || password.empty()) {
+        notif = "Username and password can't be empty. Try again.";
+        connector->lastMsg = '\0';
+        return false;
+    }
+    char rCode = Msg::Register;
+    int step = 0;
+    //Send command
+    step += sendData(&rCode, sizeof(char));
+    //Send username
+    size_t expectedSize = username.size();
+    step += sendData((char *)&expectedSize, sizeof(size_t));
+    step += sendData((char *)username.c_str(), expectedSize);
+    //Send password
+    string encrypted(sha256(password));
+    expectedSize = encrypted.size();
+    step += sendData((char *)&expectedSize, sizeof(size_t));
+    step += sendData((char *)encrypted.c_str(), expectedSize);
+    if (step != 5) {
+        cerr << "Failed to send login info to server" << endl;
+        return false;
+    }
+    //Receive register results from server
+    int check = 0;
+    do {
+        check = canRecv();
+        if (check == 1 || connector->lastMsg != '\0') {
+            cout << "Result = " << result << endl;
+            if (result == 0) {
+                notif = "Register success. Please login with your account";
+                connector->lastMsg = '\0';
+                return true;
+            }
+            else if (result == 1) {
+                notif = "Username: " + username + " already exists";
+                connector->lastMsg = '\0';
+                return false;
+            }
+        }
+    } while (check != 1 && connector->lastMsg == '\0' && connector->socket != INVALID_SOCKET);
+    notif = "Unable to retrieve registration result. Register Failed!";
+    connector->lastMsg = '\0';
+    return false;
 }
 
 bool Client::isAdminAccount(){

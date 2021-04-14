@@ -8,7 +8,7 @@ bool MyApp::OnInit()
     t = new thread(socketHandling, this);
     return true;
 }
-int MyApp::OnExit(wxCloseEvent& event)
+int MyApp::OnExit()
 {
     t->join();
     client->closeConnection();
@@ -19,6 +19,7 @@ int MyApp::OnExit(wxCloseEvent& event)
     delete df_client;
     delete t;
     close(true);
+    return 0;
 }
 
 void MyApp::showMainFrame()
@@ -27,9 +28,16 @@ void MyApp::showMainFrame()
     mframe->Show(true);
 }
 
+
+void MyApp::displayNotif(const wxString &notif) {
+    wxMessageBox(notif, wxT("Message"),
+                 wxOK | wxICON_INFORMATION);
+}
+
 void MyApp::socketHandling() {
+    wxWindow *currentWindow = nullptr;
     //While the app is still opening
-    while (GetTopWindow() != nullptr) {
+    while ((currentWindow = GetTopWindow()) != nullptr) {
         //Poll event returns false when there are connection error
         if (!client->pollNetworkEvents())
             continue;
@@ -40,7 +48,7 @@ void MyApp::socketHandling() {
             while (step == 0)
                 step += client->recvData(&rCode, sizeof(char), true);
             switch (rCode) {
-                case '1':
+                case Client::Login:
                     //The server send back login result
                     client->result = -100;
                     while (step == 1)
@@ -51,13 +59,23 @@ void MyApp::socketHandling() {
                     }
                     if ((client->result == 0 && step != 3) || ((client->result == -1 || client->result == 1) && step != 2)) {
                         cerr << "Failed to receive login result" << endl;
-                        client->setMsg('0');
                     }
-                    else client->setMsg('1');
+                    client->setMsg(Client::Login);
+                    break;
+                case Client::Register:
+                    //The server send back login result
+                    client->result = -100;
+                    while (step == 1)
+                        step += client->recvData((char*)&(client->result), sizeof(int), false);
+                    if (step != 2) {
+                        cerr << "Failed to receive register result" << endl;
+                    }
+                    client->setMsg(Client::Register);
                     break;
                 default:
-                    cerr << rCode << " is invalid request code." << endl;
-                    client->setMsg(rCode);
+                    cerr << "Invalid request code." << endl;
+                    client->setMsg('\0');
+                    client->closeConnection();
             }
             if (step < 0) {
                 client->closeConnection();
@@ -68,7 +86,8 @@ void MyApp::socketHandling() {
         if (client->canClose()) {
             client->closeConnection();
             //DISPLAY A WINDOW SAYING CONNECTION TO SERVER HAS BEEN CLOSED
-            //THEN FORCE CLOSE PROGRAM OR RETURN TO LOGIN FRAME
+            //THEN FORCE CLOSE PROGRAM OR RETURN TO LOGIN FRAME OR ALLOW USER VIEW MATCHES, WITHOUT REFRESH
         }
     }
 }
+
