@@ -10,13 +10,14 @@ bool MyApp::OnInit()
 }
 int MyApp::OnExit()
 {
+    cout << "EXIT APP";
     t->join();
     client->closeConnection();
     delete client;
-    delete lframe;
-    delete mframe;
-    delete df_admin;
-    delete df_client;
+    lframe->Destroy();
+    mframe->Destroy();
+    df_admin->Destroy();
+    df_client->Destroy();
     delete t;
     close(true);
     return 0;
@@ -42,51 +43,42 @@ void MyApp::socketHandling() {
         if (!client->pollNetworkEvents())
             continue;
         //If there's data to read from server
-        if (client->canRecv()) {
-            char rCode = '0';
-            int step = 0;
-            while (step == 0)
-                step += client->recvData(&rCode, sizeof(char), true);
-            switch (rCode) {
-                case Client::Login:
-                    //The server send back login result
-                    client->result = -100;
-                    while (step == 1)
-                        step += client->recvData((char*)&(client->result), sizeof(int), true);
-                    if (client->result == 0) {
-                        while (step == 2)
-                            step += client->recvData((char*)&(client->account.isAdmin), sizeof(bool), true);
-                    }
-                    if ((client->result == 0 && step != 3) || ((client->result == -1 || client->result == 1) && step != 2)) {
-                        cerr << "Failed to receive login result" << endl;
-                    }
-                    client->setMsg(Client::Login);
-                    break;
-                case Client::Register:
-                    //The server send back login result
-                    client->result = -100;
-                    while (step == 1)
-                        step += client->recvData((char*)&(client->result), sizeof(int), false);
-                    if (step != 2) {
-                        cerr << "Failed to receive register result" << endl;
-                    }
-                    client->setMsg(Client::Register);
-                    break;
-                default:
-                    cerr << "Invalid request code." << endl;
-                    client->setMsg('\0');
-                    client->closeConnection();
+        try {
+            if (client->canRecv() == 1) {
+                char rCode = '0';
+                client->result = -100;
+                client->recvData(&rCode, sizeof(char));
+                switch (rCode) {
+                    case Client::Login:
+                        //The server send back login result
+                        client->recvData((char*)&(client->result), sizeof(int));
+                        if (client->result == 0) {
+                            client->recvData((char*)&(client->account.isAdmin), sizeof(bool));
+                        }
+                        client->setMsg(Client::Login);
+                        break;
+                    case Client::Register:
+                        //The server send back login result
+                        client->recvData((char*)&(client->result), sizeof(int));
+                        client->setMsg(Client::Register);
+                        break;
+                    default:
+                        cerr << "Invalid request code." << endl;
+                        client->setMsg('\0');
+                }
             }
-            if (step < 0) {
-                client->closeConnection();
-                continue;
-            }
+        } catch (const NetworkException& e) {
+            displayNotif(e.what());
+            client->closeConnection();
+            continue;
         }
         //Handle connection close event
         if (client->canClose()) {
-            client->closeConnection();
-            //DISPLAY A WINDOW SAYING CONNECTION TO SERVER HAS BEEN CLOSED
-            //THEN FORCE CLOSE PROGRAM OR RETURN TO LOGIN FRAME OR ALLOW USER VIEW MATCHES, WITHOUT REFRESH
+            client->closeConnection();;
+        }
+        if (client->isInvalid() && !client->account.username.empty()) {
+            displayNotif("Server disconnected.");
+            //HANDLE FRAME JUMPING BY THROWING AN EVENT HERE FOR EVENT HANDLERS TO RESOLVE
         }
     }
 }

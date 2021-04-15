@@ -21,7 +21,17 @@ Server::Server(const string& connectString, const char* ipAddr) : db(connectStri
     }
 }
 
-Server::~Server() {
+// Server::~Server() {
+//     for (int i = socketList.size() - 1; i >= 0; --i)
+//     {
+//         removeSocket(i);
+//     }
+//     freeaddrinfo(svInfo);
+//     WSACleanup();
+//     db.logoutAll();
+// }
+
+void Server::OnExit() {
     for (int i = socketList.size() - 1; i >= 0; --i)
     {
         removeSocket(i);
@@ -163,11 +173,11 @@ int Server::canRecv() {
     return 1;
 }
 
-int Server::recvData(int sockIndex, char *buf, size_t dataSize, bool isContinuous) {
+void Server::recvData(int sockIndex, char *buf, size_t dataSize, bool isContinuous) {
     //Set the buffer for receiving
     if (dataSize == 0) {
         cerr << "Can't receive data size 0." << endl;
-        return -1;
+        return;
     }
     DWORD flag = 0;
     DWORD bRecv = 0;
@@ -175,10 +185,7 @@ int Server::recvData(int sockIndex, char *buf, size_t dataSize, bool isContinuou
         socketList[sockIndex]->byteRecv = 0;
     }
     if (buf == nullptr) {
-        if (!socketList[sockIndex]->buf.empty())
-            socketList[sockIndex]->appendBuffer(nullptr, dataSize);
-        else
-            socketList[sockIndex]->setBuffer(nullptr, dataSize);
+        socketList[sockIndex]->setBuffer(nullptr, dataSize);
     }
     else {
         socketList[sockIndex]->dataBuf.buf = buf;
@@ -189,19 +196,19 @@ int Server::recvData(int sockIndex, char *buf, size_t dataSize, bool isContinuou
         rc = WSARecv(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
         if (rc == SOCKET_ERROR) {
             if (WSAGetLastError() != WSAEWOULDBLOCK) {
-                cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+                //cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
                 removeSocket(sockIndex);
-                return -1;
+                throw NetworkException("Something went wrong while receiving data from client, error ", WSAGetLastError());
             }
-            else //If WSAEWOULDBLOCK, wait for FD_READ event to call this function again
-                return 0;
+            else { //If WSAEWOULDBLOCK, wait for a while then try again
+                Sleep(100);
+                continue;
+            }
         }
         socketList[sockIndex]->byteRecv += bRecv;
         socketList[sockIndex]->dataBuf.buf += bRecv;
         socketList[sockIndex]->dataBuf.len -= bRecv;
     } while (isContinuous && socketList[sockIndex]->byteRecv < dataSize);
-    
-    return 1;
 }
 
 int Server::canSend() {
@@ -215,70 +222,78 @@ int Server::canSend() {
     return 1;
 }
 
-int Server::sendData(int sockIndex, char *buf, size_t dataSize) {
+void Server::sendData(int sockIndex, char *buf, size_t dataSize, bool isContinuous) {
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "Can't send data size 0." << endl;
-        return -1;
+        return;
     }
     DWORD bSend = 0;
+    if (isContinuous) {
+        socketList[sockIndex]->byteSend = 0;
+    }
     if (buf != nullptr) {
-        socketList[sockIndex]->dataBuf.buf = buf;
-        socketList[sockIndex]->dataBuf.len = dataSize;
+        socketList[sockIndex]->setBuffer(buf, dataSize);
     }
     else {
         socketList[sockIndex]->dataBuf.buf = &socketList[sockIndex]->buf[0];
         socketList[sockIndex]->dataBuf.len = dataSize;
     }
-    rc = WSASend(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &bSend, 0, nullptr, nullptr);
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK) {
-            cerr << "Something went wrong while sending data to client, error " << WSAGetLastError() << endl;
-            removeSocket(sockIndex);
-            return -1;
+    do {
+        rc = WSASend(socketList[sockIndex]->socket, &socketList[sockIndex]->dataBuf, 1, &bSend, 0, nullptr, nullptr);
+        if (rc == SOCKET_ERROR) {
+            if (WSAGetLastError() != WSAEWOULDBLOCK) {
+                //cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+                removeSocket(sockIndex);
+                throw NetworkException("Something went wrong while sending data to client, error ", WSAGetLastError());
+            }
+            else { //If WSAEWOULDBLOCK, wait for a while to call this function again
+                Sleep(100);
+                continue;
+            }
         }
-        else //If WSAEWOULDBLOCK, wait for FD_WRITE event to call this function again
-            return 0;
-    }
+        socketList[sockIndex]->byteSend += bSend;
+        socketList[sockIndex]->dataBuf.buf += bSend;
+        socketList[sockIndex]->dataBuf.len -= bSend;
+    } while (isContinuous && socketList[sockIndex]->byteSend < dataSize);
     //Flush the send buffer after finished
-    socketList[sockIndex]->byteSend += bSend;
-    if (buf == nullptr) 
-        socketList[sockIndex]->extractBuffer(nullptr, bSend);
+    if (buf != nullptr)
+        socketList[sockIndex]->extractBuffer(nullptr, dataSize);
+}
+
+bool Server::canClose() {
+    if (netEvent.lNetworkEvents & FD_CLOSE)
+        return true;
+    return false;
+}
+
+bool Server::closeConnection(int sockIndex) {
+    if (socketList[sockIndex]->socket == INVALID_SOCKET)
+        return true;
+    cout << "Closing connection with socket " << sockIndex << endl;
+    if (!removeSocket(sockIndex)) {
+        cerr << "Failed to remove socket " << sockIndex  << endl;
+        return false;
+    }
     return true;
 }
 
-int Server::closeConnection(int sockIndex) {
-    if (socketList[sockIndex]->socket == INVALID_SOCKET)
-        return 1;
-    if (netEvent.lNetworkEvents & FD_CLOSE) {
-        // if (netEvent.iErrorCode[FD_CLOSE_BIT] != 0) {
-        //     cerr << "Socket " << sockIndex << " has been disconnected ungracefully on the client side, error " << netEvent.iErrorCode[FD_CLOSE_BIT] << endl;
-        // }
-        cout << "Closing connection with socket " << sockIndex << endl;
-        if (!removeSocket(sockIndex)) {
-            cerr << "Failed to remove socket " << sockIndex  << endl;
-            return -1;
-        }
-        return 1;
-    }
-    return 0;
-}
-
 bool Server::loginClient(int iSock, User& user) {
-    rc = 0;
-    int step = 0;
+    rc = -100;
     size_t expectedSize = 0;
     string username, password;
     //Receive the username and password from client
-    step += recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Username length
-    username.resize(expectedSize);
-    step += recvData(iSock, nullptr, expectedSize, true); //Username
-    socketList[iSock]->extractBuffer(&username[0], expectedSize);
-    step += recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Password length
-    password.resize(expectedSize);
-    step += recvData(iSock, nullptr, expectedSize, true); //Password
-    socketList[iSock]->extractBuffer(&password[0], expectedSize);
-    if (step != 4) {
+    try {
+        recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Username length
+        username.resize(expectedSize);
+        recvData(iSock, nullptr, expectedSize, true); //Username
+        socketList[iSock]->extractBuffer(&username[0], expectedSize);
+        recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Password length
+        password.resize(expectedSize);
+        recvData(iSock, nullptr, expectedSize, true); //Password
+        socketList[iSock]->extractBuffer(&password[0], expectedSize);
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
         cerr << "Failed to receive username and password from client " << iSock << endl;
         return false;
     }
@@ -290,19 +305,20 @@ bool Server::loginClient(int iSock, User& user) {
 
 bool Server::registerAccount(int iSock) {
     rc = -100;
-    int step = 0;
     size_t expectedSize = 0;
     string username, password;
     //Receive the username and password from client
-    step += recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Username length
-    username.resize(expectedSize);
-    step += recvData(iSock, nullptr, expectedSize, true); //Username
-    socketList[iSock]->extractBuffer(&username[0], expectedSize);
-    step += recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Password length
-    password.resize(expectedSize);
-    step += recvData(iSock, nullptr, expectedSize, true); //Password
-    socketList[iSock]->extractBuffer(&password[0], expectedSize);
-    if (step != 4) {
+    try {
+        recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Username length
+        username.resize(expectedSize);
+        recvData(iSock, nullptr, expectedSize, true); //Username
+        socketList[iSock]->extractBuffer(&username[0], expectedSize);
+        recvData(iSock, (char *)&expectedSize, sizeof(size_t), true); //Password length
+        password.resize(expectedSize);
+        recvData(iSock, nullptr, expectedSize, true); //Password
+        socketList[iSock]->extractBuffer(&password[0], expectedSize);
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
         cerr << "Failed to receive username and password from client " << iSock << endl;
         return false;
     }
@@ -343,16 +359,17 @@ int Server::handleRequest(char rCode, int iSock) {
 }
 
 bool Server::handleFeedback(int iSock) {
-    int step = 0;
     int result = -100;
     //LOGIN RESULT
     if (socketList[iSock]->lastMsg == Msg::Login) {
         socketList[iSock]->extractBuffer((char*)&result, sizeof(int));
-        step += sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
-        step += sendData(iSock, (char*)&result, sizeof(int));
-        if (result == 0)
-            step += sendData(iSock, (char*)&(accounts[iSock - 1].isAdmin), sizeof(bool));
-        if ((result == 0 && step != 3) || (result != 0 && step != 2)) {
+        try {
+            sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
+            sendData(iSock, (char*)&result, sizeof(int));
+            if (result == 0)
+                sendData(iSock, (char*)&(accounts[iSock - 1].isAdmin), sizeof(bool));
+        } catch (const NetworkException& e) {
+            cerr << e.what() << endl;
             cerr << "Failed to feedback login result to client " << iSock << ". Socket will be removed." << endl;
             removeSocket(iSock);
             return false;
@@ -360,7 +377,7 @@ bool Server::handleFeedback(int iSock) {
         if (result != 0) {
             cerr << "Failed to login account " << accounts[iSock - 1].username << ". Socket " << iSock << " will be closed." << endl;
             removeSocket(iSock, false);
-            return false;
+            return true;
         }
         socketList[iSock]->lastMsg = '0';
         return true;
@@ -368,9 +385,11 @@ bool Server::handleFeedback(int iSock) {
     //REGISTER RESULT
     if (socketList[iSock]->lastMsg == Msg::Register) {
         socketList[iSock]->extractBuffer((char*)&result, sizeof(int));
-        step += sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
-        step += sendData(iSock, (char*)&result, sizeof(int));
-        if (step != 2) {
+        try {
+            sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
+            sendData(iSock, (char*)&result, sizeof(int));
+        } catch (const NetworkException& e) {
+            cerr << e.what() << endl;
             cerr << "Failed to feedback register result to client " << iSock << ". Socket will be removed." << endl;
             removeSocket(iSock);
             return false;
@@ -378,7 +397,7 @@ bool Server::handleFeedback(int iSock) {
         if (result != 0) {
             cerr << "Failed to register account for client " << iSock << ". Socket " << iSock << " will be closed." << endl;
             removeSocket(iSock);
-            return false;
+            return true;
         }
         socketList[iSock]->lastMsg = '0';
         return true;
