@@ -168,10 +168,13 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
             // exception window : Login Failed
             ErrorMsg(notif);
             //client->closeConnection();
+            inputUserText->Clear();
+            inputPassText->Clear();
         }
     }
     else
     {
+        inputServerText->Clear();
         ErrorMsg("Failed to connect to server!!");
     }
 }
@@ -186,8 +189,11 @@ void LoginFrame::OnRegisterClick(wxCommandEvent &event)
     }
     else
     {
+        inputServerText->Clear();
         ErrorMsg("Failed to connect to server!!");
     }
+    inputUserText->Clear();
+    inputPassText->Clear();
 }
 void LoginFrame::ErrorMsg(wxString msg)
 {

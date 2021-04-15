@@ -46,9 +46,9 @@ public:
     //Check if the FD_WRITE is triggered, -1 = error, 0 = not triggered, 1 = triggered
     int canSend();
     //Receive message from client, if buf = null, function uses default buffer of socketwrapper
-    int recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = false);
+    void recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = true);
     //Send data to client, if buf = null, function uses default buffer of socketwrapper
-    int sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    void sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = true);
     //Check if can close connection
     bool canClose();
     //Close connection
@@ -59,6 +59,8 @@ public:
     bool registerAcc(const string &username, const string &password, string& notif);
     // Check if client 
     bool isAdminAccount();
+    //Check if the socket is valid
+    bool isInvalid();
     // Set Msg received from server
     void setMsg(char c);
     // Get the recorded message
