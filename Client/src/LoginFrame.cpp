@@ -145,8 +145,10 @@ LoginFrame::~LoginFrame()
 
 void LoginFrame::OnLoginClick(wxCommandEvent &event)
 {
+    // FOR DEBUG ONLY:
     // this->Close();
     // MainFrame *mframe = new MainFrame(client, NULL);
+    // mframe->InitiTableMatch(lMatch);
     // mframe->Show(true);
     if (client->connectTo(inputServerText->GetValue().ToStdString()))
     {

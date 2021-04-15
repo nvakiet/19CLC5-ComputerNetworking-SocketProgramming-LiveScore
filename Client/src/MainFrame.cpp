@@ -1,4 +1,5 @@
 #include "GUI.h"
+#include "DB_Structs.h"
 MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
 	client = a;
@@ -165,4 +166,14 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 		dframe->Show();
 	}
 }
-void MainFrame::InitiTableMatch() {}
+void MainFrame::InitiTableMatch(/*vector<MatchInfo> data->LstMatch*/)
+{
+	for (int index = 0; index < data->LstMatch.size(); index++)
+	{
+		LIST_MATCH->SetCellValue(index, 0, data->LstMatch[index].id);
+		LIST_MATCH->SetCellValue(index, 1, data->LstMatch[index].timeMatch);
+		LIST_MATCH->SetCellValue(index, 2, data->LstMatch[index].teamA);
+		LIST_MATCH->SetCellValue(index, 3, to_string(data->LstMatch[index].scoreA) + " - " + to_string(data->LstMatch[index].scoreB));
+		LIST_MATCH->SetCellValue(index, 4, data->LstMatch[index].teamB);
+	}
+}

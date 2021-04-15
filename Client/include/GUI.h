@@ -4,7 +4,9 @@
 #include <wx/grid.h>
 #include <iostream>
 #include <thread>
+#include<vector>
 #include "client.h"
+#include"DB_Structs.h"
 #include <wx/string.h>
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
@@ -46,7 +48,7 @@ class MainFrame : public wxFrame
 {
 	private:
 		Client *client;
-		void InitializeTableMATCH();
+		ListMatch* data;
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
@@ -60,12 +62,10 @@ class MainFrame : public wxFrame
 		virtual void OnRefreshClick( wxCommandEvent& event );
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
 		virtual void OnSearchDetailsDClick( wxGridEvent& event );
-		virtual void InitiTableMatch();
 	
 	public:
-		
 		MainFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 512,371 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
-		
+		virtual void InitiTableMatch();
 		~MainFrame();
 	
 };
