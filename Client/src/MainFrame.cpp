@@ -166,12 +166,14 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 		dframe->Show();
 	}
 }
-// void MainFrame::InitiTableMatch(vector<MatchInfo> InputListMatch){
-// 	for(int index =0; index <InputListMatch.size() ; index++){
-// 		LIST_MATCH->SetCellValue(0,index,InputListMatch[index].getID());
-// 		LIST_MATCH->SetCellValue(1,index,InputListMatch[index].getTime());
-// 		LIST_MATCH->SetCellValue(2,index,InputListMatch[index].getNameTeamA());
-// 		LIST_MATCH->SetCellValue(3,index,InputListMatch[index].getScore());
-// 		LIST_MATCH->SetCellValue(4,index,InputListMatch[index].getNameTeamB());
-// 	}
-// }
+void MainFrame::InitiTableMatch(/*vector<MatchInfo> data->LstMatch*/)
+{
+	for (int index = 0; index < data->LstMatch.size(); index++)
+	{
+		LIST_MATCH->SetCellValue(index, 0, data->LstMatch[index].id);
+		LIST_MATCH->SetCellValue(index, 1, data->LstMatch[index].timeMatch);
+		LIST_MATCH->SetCellValue(index, 2, data->LstMatch[index].teamA);
+		LIST_MATCH->SetCellValue(index, 3, to_string(data->LstMatch[index].scoreA) + " - " + to_string(data->LstMatch[index].scoreB));
+		LIST_MATCH->SetCellValue(index, 4, data->LstMatch[index].teamB);
+	}
+}

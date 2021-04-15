@@ -5,30 +5,34 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include<time.h>
 
 using namespace std;
 
-struct User {
+struct User
+{
     string username;
     bool isAdmin;
 };
-
-struct MatchInfo{
-    private:
-        string id;
-        string timeMatch;
-        string teamA;
-        string teamB;
-        unsigned int scoreA;
-        unsigned int scoreB;
-    public: 
-        MatchInfo( vector<char> response);
-        void toByteStream(vector<char>&result);
+struct MatchInfo
+{
+public:
+    string id;
+    string timeMatch;
+    string teamA;
+    string teamB;
+    unsigned int scoreA;
+    unsigned int scoreB;
+    // FOR DEBUG ONLY:
+    // MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B);
+    MatchInfo(vector<char> response);
+    void toByteStream(vector<char> &result);
 };
-struct ListMatch{
-    private:
-        vector<MatchInfo> lstMatch;
-    public:
+struct ListMatch
+{
+    vector<MatchInfo> LstMatch;
+    //FOR DEBUG ONLY:
+    //ListMatch();
+    ListMatch(vector<char>response);
+    void toByteStream(vector<char>&result);
 };
 #endif

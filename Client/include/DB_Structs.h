@@ -8,24 +8,31 @@
 
 using namespace std;
 
-struct User {
+struct User
+{
     string username;
     bool isAdmin;
 };
-struct MatchInfo{
-    private:
-        string id;
-        string time;
-        string teamA;
-        string teamB;
-        string Score;
-    public: 
-        MatchInfo(string response);
-        string createArequest();
-        string getID();
-        string getTime();
-        string getNameTeamA();
-        string getNameTeamB();
-        string getScore();
+struct MatchInfo
+{
+public:
+    string id;
+    string timeMatch;
+    string teamA;
+    string teamB;
+    unsigned int scoreA;
+    unsigned int scoreB;
+    // FOR DEBUG ONLY:
+    // MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B);
+    MatchInfo(vector<char> response);
+    void toByteStream(vector<char> &result);
+};
+struct ListMatch
+{
+    vector<MatchInfo> LstMatch;
+    //FOR DEBUG ONLY:
+    //ListMatch();
+    ListMatch(vector<char>response);
+    void toByteStream(vector<char>&result);
 };
 #endif

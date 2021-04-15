@@ -18,5 +18,12 @@
 //     return 0;
 // }
 
-#include"GUI.h"
-wxIMPLEMENT_APP(MyApp);
+ #include"GUI.h"
+  wxIMPLEMENT_APP(MyApp);
+//FOR DEBUG ONLY:
+// int main(){
+//     vector <char> result;
+//     ListMatch * lm = new ListMatch();
+//     lm->toByteStream(result);
+//     ListMatch * lm2 = new ListMatch(result);
+// }
