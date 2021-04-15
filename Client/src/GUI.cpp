@@ -13,10 +13,10 @@ int MyApp::OnExit()
     t->join();
     client->closeConnection();
     delete client;
-    delete lframe;
-    delete mframe;
-    delete df_admin;
-    delete df_client;
+    lframe->Close();
+    mframe->Close();
+    df_admin->Close();
+    df_client->Close();
     delete t;
     close(true);
     return 0;

@@ -233,6 +233,7 @@ bool Client::login(const string &username, const string &password, string& notif
     //Receive login results from server
     int check = 0;
     do {
+        cout << "Result = " << result << endl;
         check = canRecv();
         if (check == 1 || connector->lastMsg != '\0') {
             cout << "Result = " << result << endl;

@@ -1,5 +1,4 @@
 #include "DB_Structs.h"
-
 void setBuffer(char *newBuf, size_t newLen, vector<char> &buf)
 {
     buf.resize(newLen);
@@ -69,38 +68,149 @@ void MatchInfo::toByteStream(vector<char> &result)
     appendBuffer((char *)&scoreB, sizeof(unsigned int), result);
 }
 // FOR DEBUG ONLY:
-// MatchInfo::MatchInfo(const char* ID, const char* time,const char* nameA,const char* nameB,unsigned int score_A,unsigned score_B):
-//             id(ID),timeMatch(time),teamA(nameA),teamB(nameB),scoreA(score_A),scoreB(score_B){}
-ListMatch::ListMatch(vector<char> response){
+//MatchInfo::MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B) : id(ID), timeMatch(time), teamA(nameA), teamB(nameB), scoreA(score_A), scoreB(score_B) {}
+ListMatch::ListMatch(vector<char> response)
+{
     size_t expectedSize = 0;
 
-    while(!response.empty()){
-        extractBuffer((char*)&expectedSize,sizeof(size_t),response);
+    while (!response.empty())
+    {
+        extractBuffer((char *)&expectedSize, sizeof(size_t), response);
         vector<char> cache;
         cache.resize(expectedSize);
-        extractBuffer((char*)&cache[0],expectedSize,response);
+        extractBuffer((char *)&cache[0], expectedSize, response);
         MatchInfo *temp = new MatchInfo(cache);
         LstMatch.push_back(*temp);
     }
 }
-void ListMatch::toByteStream(vector<char>&result){
+void ListMatch::toByteStream(vector<char> &result)
+{
     if (!result.empty())
     {
         result.erase(result.begin(), result.end());
     }
-    for(int index =0;index<LstMatch.size();index++){
-        vector<char> cache; 
+    size_t sizeListMatch = LstMatch.size();
+    setBuffer((char *)&sizeListMatch, sizeof(size_t), result);
+    for (int index = 0; index < sizeListMatch; index++)
+    {
+        vector<char> cache;
         LstMatch[index].toByteStream(cache);
         size_t sizeCache = cache.size();
         appendBuffer((char *)&sizeCache, sizeof(size_t), result);
         appendBuffer((char *)&cache[0], sizeCache, result);
     }
-    
 }
-//FOR DEBUG ONLY: 
-// ListMatch::ListMatch(){
-//     MatchInfo a("VNTL","15:30","Viet Nam","Thai Land",2,1);
-//     MatchInfo b("AS","20:33","Australia","Singarpore",4,4);
+//FOR DEBUG ONLY:
+// ListMatch::ListMatch()
+// {
+//     MatchInfo a("VNTL", "15:30", "Viet Nam", "Thai Land", 2, 1);
+//     MatchInfo b("AS", "20:33", "Australia", "Singarpore", 4, 4);
 //     LstMatch.push_back(a);
 //     LstMatch.push_back(b);
 // }
+
+Event::Event(vector<char> response) : scoreA(0), scoreB(0), isGoal(true)
+{
+    size_t expectedSize = 0;
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    timeline.resize(expectedSize);
+    extractBuffer((char *)&timeline[0], expectedSize, response);
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    namePlayerTeamA.resize(expectedSize);
+    extractBuffer((char *)&namePlayerTeamA[0], expectedSize, response);
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    namePlayerTeamB.resize(expectedSize);
+    extractBuffer((char *)&namePlayerTeamB[0], sizeof(size_t), response);
+    extractBuffer((char *)&scoreA, sizeof(unsigned int), response);
+    extractBuffer((char *)&scoreB, sizeof(unsigned int), response);
+    extractBuffer((char *)&expectedSize, sizeof(unsigned int), response);
+    card.resize(expectedSize);
+    extractBuffer((char *)&card[0], expectedSize, response);
+    extractBuffer((char *)&isGoal, sizeof(bool), response);
+}
+
+// //FOR DEBUG ONLY:
+// Event::Event()
+// {
+//     timeline = "62'";
+//     namePlayerTeamA = "bahuy";
+//     namePlayerTeamB.clear();
+//     scoreA = 1;
+//     scoreB = 0;
+//     isGoal = true;
+// }
+// //FOR DEBUG ONLY:
+// Event::Event(const char *t) : timeline(t)
+// {
+//     namePlayerTeamB = "yenbinh";
+//     scoreA = 1;
+//     scoreB = 2;
+//     card = "Yellow";
+//     isGoal = false;
+// }
+void Event::toByteStream(vector<char> &result)
+{
+
+    if (!result.empty())
+    {
+        result.erase(result.begin(), result.end());
+    }
+    size_t sizeTimeLine = timeline.size();
+    size_t sizenameA = namePlayerTeamA.size();
+    size_t sizenameB = namePlayerTeamB.size();
+    size_t sizeCard = card.size();
+    setBuffer((char *)&sizeTimeLine, sizeof(size_t), result);
+    appendBuffer((char *)&timeline[0], sizeTimeLine, result);
+    appendBuffer((char *)&sizenameA, sizeof(size_t), result);
+    appendBuffer((char *)&namePlayerTeamA[0], sizenameA, result);
+    appendBuffer((char *)&sizenameB, sizeof(size_t), result);
+    appendBuffer((char *)&namePlayerTeamB[0], sizenameB, result);
+    appendBuffer((char *)&scoreA, sizeof(unsigned int), result);
+    appendBuffer((char *)&scoreB, sizeof(unsigned int), result);
+    appendBuffer((char *)&sizeCard, sizeof(size_t), result);
+    appendBuffer((char *)&card[0], sizeCard, result);
+    appendBuffer((char *)&isGoal, sizeof(bool), result);
+}
+//For DEBUG ONLY:
+// MatchDetails::MatchDetails()
+// {
+//     Event a;
+//     Event b("88'");
+//     listEvent.push_back(a);
+//     listEvent.push_back(b);
+//     vector<char> v1;
+//     Event c("93'");
+//     c.toByteStream(v1);
+//     Event d(v1);
+//     listEvent.push_back(d);
+// }
+
+MatchDetails::MatchDetails(vector<char> response)
+{
+    size_t expectedSize = 0;
+
+    while (!response.empty())
+    {
+        extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+        vector<char> cache;
+        cache.resize(expectedSize);
+        extractBuffer((char *)&cache[0], expectedSize, response);
+        Event *temp = new Event(cache);
+        listEvent.push_back(*temp);
+    }
+}
+void MatchDetails::toByteStream(vector<char> &result)
+{
+    if (!result.empty())
+    {
+        result.erase(result.begin(), result.end());
+    }
+    for (int index = 0; index < listEvent.size(); index++)
+    {
+        vector<char> cache;
+        listEvent[index].toByteStream(cache);
+        size_t sizeCache = cache.size();
+        appendBuffer((char *)&sizeCache, sizeof(size_t), result);
+        appendBuffer((char *)&cache[0], sizeCache, result);
+    }
+}

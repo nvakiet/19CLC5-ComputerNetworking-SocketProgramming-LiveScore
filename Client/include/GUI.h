@@ -65,14 +65,14 @@ class MainFrame : public wxFrame
 	
 	public:
 		MainFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 512,371 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
-		virtual void InitiTableMatch();
+		virtual void DisplayData();
 		~MainFrame();
 	
 };
 class DetailFrame_ForAdmin : public wxFrame 
 {
 	private:
-	
+		MatchDetails* data;
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
@@ -91,7 +91,7 @@ class DetailFrame_ForAdmin : public wxFrame
 		virtual void OnAddClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnUpdateClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteCLick( wxCommandEvent& event ) { event.Skip(); }
-		
+		virtual void DisplayData();
 	public:
 		
 		DetailFrame_ForAdmin( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
@@ -103,7 +103,7 @@ class DetailFrame_ForAdmin : public wxFrame
 class DetailFrame_ForClient : public wxFrame 
 {
 	private:
-	
+		MatchDetails* data;
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
@@ -113,7 +113,7 @@ class DetailFrame_ForClient : public wxFrame
 		wxStaticText* ScoreLabel;
 		wxStaticText* TeamBLabel;
 		wxGrid* DETAILS_MATCH_TABLE;
-		
+		virtual void DisplayData();
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
 		

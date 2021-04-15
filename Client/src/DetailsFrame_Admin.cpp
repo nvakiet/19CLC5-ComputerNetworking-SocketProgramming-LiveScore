@@ -4,6 +4,9 @@
 
 DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
+	//FOR DEBUG ONLY:
+    //data = new MatchDetails();
+
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
 
@@ -127,7 +130,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	DETAILS_MATCH_TABLE = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0);
 
 	// Grid
-	DETAILS_MATCH_TABLE->CreateGrid(10, 4);
+	DETAILS_MATCH_TABLE->CreateGrid(data->listEvent.size(), 4);
 	DETAILS_MATCH_TABLE->EnableEditing(false);
 	DETAILS_MATCH_TABLE->EnableGridLines(true);
 	DETAILS_MATCH_TABLE->SetGridLineColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT));
@@ -169,7 +172,9 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	this->SetSizer(mainBox);
 	this->Layout();
 	mainBox->Fit(this);
-
+	//DisplayData
+	this->DisplayData();
+	
 	this->Centre(wxBOTH);
 
 	// Connect Events
@@ -178,7 +183,21 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	UPDATEBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
 }
-
+void DetailFrame_ForAdmin::DisplayData(){
+    for (int index = 0; index < data->listEvent.size(); index++)
+	{
+		DETAILS_MATCH_TABLE->SetCellValue(index,0,data->listEvent[index].timeline);
+        DETAILS_MATCH_TABLE->SetCellValue(index,1,data->listEvent[index].namePlayerTeamA);
+        if(data->listEvent[index].isGoal){
+            DETAILS_MATCH_TABLE->SetCellValue(index,2,to_string(data->listEvent[index].scoreA) + " - " + to_string(data->listEvent[index].scoreB));
+        }
+        else 
+        {
+            DETAILS_MATCH_TABLE->SetCellValue(index,2,data->listEvent[index].card);
+        }
+        DETAILS_MATCH_TABLE->SetCellValue(index,3,data->listEvent[index].namePlayerTeamB);
+	}
+}
 DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 {
 	// Disconnect Events

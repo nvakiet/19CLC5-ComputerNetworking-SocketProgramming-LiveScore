@@ -1,8 +1,11 @@
 #include "GUI.h"
-#include "DB_Structs.h"
 MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
 	client = a;
+	//FOR DEBUG ONLY:
+	// init ListMatch
+	//data = new ListMatch();
+
 	this->SetSizeHints(wxSize(-1, -1), wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
 
@@ -63,7 +66,7 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	LIST_MATCH = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0);
 
 	// Grid
-	LIST_MATCH->CreateGrid(10, 5);
+	LIST_MATCH->CreateGrid(data->LstMatch.size(), 5);
 	LIST_MATCH->EnableEditing(false);
 	LIST_MATCH->EnableGridLines(true);
 	LIST_MATCH->SetGridLineColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT));
@@ -108,6 +111,10 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	this->SetSizer(mainBox);
 	this->Layout();
 	mainBox->Fit(this);
+
+	//DisplayData
+	this->DisplayData();
+
 
 	this->Centre(wxBOTH);
 
@@ -155,7 +162,7 @@ void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
 void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 {
 	// Check if the client is admin
-	if (true)
+	if (client->isAdminAccount())
 	{
 		DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(NULL);
 		dframe->Show();
@@ -166,7 +173,7 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 		dframe->Show();
 	}
 }
-void MainFrame::InitiTableMatch(/*vector<MatchInfo> data->LstMatch*/)
+void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 {
 	for (int index = 0; index < data->LstMatch.size(); index++)
 	{

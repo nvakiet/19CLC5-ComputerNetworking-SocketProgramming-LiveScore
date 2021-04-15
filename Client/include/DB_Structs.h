@@ -23,7 +23,7 @@ public:
     unsigned int scoreA;
     unsigned int scoreB;
     // FOR DEBUG ONLY:
-    // MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B);
+    //MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B);
     MatchInfo(vector<char> response);
     void toByteStream(vector<char> &result);
 };
@@ -32,7 +32,31 @@ struct ListMatch
     vector<MatchInfo> LstMatch;
     //FOR DEBUG ONLY:
     //ListMatch();
-    ListMatch(vector<char>response);
-    void toByteStream(vector<char>&result);
+    ListMatch(vector<char> response);
+    void toByteStream(vector<char> &result);
+};
+struct Event
+{
+    string timeline;
+    string namePlayerTeamA;
+    string namePlayerTeamB;
+    unsigned int scoreA;
+    unsigned int scoreB;
+    string card;
+    bool isGoal;
+    //FOR DEBUG ONLY:
+    //Event();
+    //Event(const char*);
+    Event(vector<char> response);
+    void toByteStream(vector<char> &result);
+};
+struct MatchDetails
+{
+
+    vector<Event> listEvent;
+    //FOR DEBUG ONLY:
+    //MatchDetails();
+    MatchDetails(vector<char> response);
+    void toByteStream(vector<char> &result);
 };
 #endif
