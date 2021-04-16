@@ -1,4 +1,5 @@
 #include "DB_Structs.h"
+
 void setBuffer(char *newBuf, size_t newLen, vector<char> &buf)
 {
     buf.resize(newLen);
@@ -24,6 +25,28 @@ bool extractBuffer(char *extBuf, size_t extLen, vector<char> &buf)
 }
 
 MatchInfo::MatchInfo(vector<char> response)
+{
+    size_t expectedSize = 0;
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    id.resize(expectedSize);
+    extractBuffer((char *)&id[0], expectedSize, response);
+
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    timeMatch.resize(expectedSize);
+    extractBuffer((char *)&timeMatch[0], expectedSize, response);
+
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    teamA.resize(expectedSize);
+    extractBuffer((char *)&teamA[0], expectedSize, response);
+
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    teamB.resize(expectedSize);
+    extractBuffer((char *)&teamB[0], expectedSize, response);
+
+    extractBuffer((char *)&scoreA, sizeof(unsigned int), response);
+    extractBuffer((char *)&scoreB, sizeof(unsigned int), response);
+}
+void MatchInfo::updateData(vector<char> response)
 {
     size_t expectedSize = 0;
     extractBuffer((char *)&expectedSize, sizeof(size_t), response);
@@ -71,9 +94,29 @@ void MatchInfo::toByteStream(vector<char> &result)
 //MatchInfo::MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B) : id(ID), timeMatch(time), teamA(nameA), teamB(nameB), scoreA(score_A), scoreB(score_B) {}
 ListMatch::ListMatch(vector<char> response)
 {
+    size_t numMatch = 0;
+    extractBuffer((char *)&numMatch, sizeof(size_t), response);
     size_t expectedSize = 0;
-
-    while (!response.empty())
+    for (int index = 0; index < numMatch; index++)
+    {
+        extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+        vector<char> cache;
+        cache.resize(expectedSize);
+        extractBuffer((char *)&cache[0], expectedSize, response);
+        MatchInfo *temp = new MatchInfo(cache);
+        LstMatch.push_back(*temp);
+    }
+}
+void ListMatch::updateData(vector<char> response)
+{
+    if (!LstMatch.empty())
+    {
+        LstMatch.clear();
+    }
+    size_t numMatch = 0;
+    extractBuffer((char *)&numMatch, sizeof(size_t), response);
+    size_t expectedSize = 0;
+    for (int index = 0; index < numMatch; index++)
     {
         extractBuffer((char *)&expectedSize, sizeof(size_t), response);
         vector<char> cache;
@@ -128,7 +171,25 @@ Event::Event(vector<char> response) : scoreA(0), scoreB(0), isGoal(true)
     extractBuffer((char *)&card[0], expectedSize, response);
     extractBuffer((char *)&isGoal, sizeof(bool), response);
 }
-
+void Event::updateData(vector<char> response)
+{
+    size_t expectedSize = 0;
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    timeline.resize(expectedSize);
+    extractBuffer((char *)&timeline[0], expectedSize, response);
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    namePlayerTeamA.resize(expectedSize);
+    extractBuffer((char *)&namePlayerTeamA[0], expectedSize, response);
+    extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+    namePlayerTeamB.resize(expectedSize);
+    extractBuffer((char *)&namePlayerTeamB[0], sizeof(size_t), response);
+    extractBuffer((char *)&scoreA, sizeof(unsigned int), response);
+    extractBuffer((char *)&scoreB, sizeof(unsigned int), response);
+    extractBuffer((char *)&expectedSize, sizeof(unsigned int), response);
+    card.resize(expectedSize);
+    extractBuffer((char *)&card[0], expectedSize, response);
+    extractBuffer((char *)&isGoal, sizeof(bool), response);
+}
 // //FOR DEBUG ONLY:
 // Event::Event()
 // {
@@ -187,6 +248,26 @@ void Event::toByteStream(vector<char> &result)
 
 MatchDetails::MatchDetails(vector<char> response)
 {
+    size_t numEvent = 0;
+    extractBuffer((char *)&numEvent, sizeof(size_t), response);
+    size_t expectedSize = 0;
+
+    for(int index = 0; index < numEvent ; index++)
+    {
+        extractBuffer((char *)&expectedSize, sizeof(size_t), response);
+        vector<char> cache;
+        cache.resize(expectedSize);
+        extractBuffer((char *)&cache[0], expectedSize, response);
+        Event *temp = new Event(cache);
+        listEvent.push_back(*temp);
+    }
+}
+void MatchDetails::updateData(vector<char> response)
+{
+    if (!listEvent.empty())
+    {
+        listEvent.clear();
+    }
     size_t expectedSize = 0;
 
     while (!response.empty())
@@ -205,7 +286,9 @@ void MatchDetails::toByteStream(vector<char> &result)
     {
         result.erase(result.begin(), result.end());
     }
-    for (int index = 0; index < listEvent.size(); index++)
+    size_t sizeListEvent = listEvent.size();
+    setBuffer((char *)&sizeListEvent, sizeof(size_t), result);
+    for (int index = 0; index < sizeListEvent; index++)
     {
         vector<char> cache;
         listEvent[index].toByteStream(cache);

@@ -25,6 +25,7 @@ public:
     // FOR DEBUG ONLY:
     //MatchInfo(const char *ID, const char *time, const char *nameA, const char *nameB, unsigned int score_A, unsigned score_B);
     MatchInfo(vector<char> response);
+    void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
 struct ListMatch
@@ -33,6 +34,7 @@ struct ListMatch
     //FOR DEBUG ONLY:
     //ListMatch();
     ListMatch(vector<char> response);
+    void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
 struct Event
@@ -48,15 +50,19 @@ struct Event
     //Event();
     //Event(const char*);
     Event(vector<char> response);
+    void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
 struct MatchDetails
 {
-
+    string nameGroup;
+    string startDate;
+    MatchInfo *match;
     vector<Event> listEvent;
     //FOR DEBUG ONLY:
     //MatchDetails();
     MatchDetails(vector<char> response);
+    void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
 #endif

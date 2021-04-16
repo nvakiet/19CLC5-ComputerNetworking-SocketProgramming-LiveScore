@@ -5,7 +5,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(wxWindow *parent, wxWindowID id, co
 {
     //FOR DEBUG ONLY:
     //initialize data;
-    vector<char> temp;
+    vector<char>temp;
 	data = new MatchDetails(temp);
 
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
@@ -153,6 +153,12 @@ DetailFrame_ForClient::DetailFrame_ForClient(wxWindow *parent, wxWindowID id, co
     REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
 }
 void DetailFrame_ForClient::DisplayData(){
+    if(data->listEvent.size()>DETAILS_MATCH_TABLE->GetNumberRows()){
+		DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size()-DETAILS_MATCH_TABLE->GetNumberRows());
+	}
+	else if(data->listEvent.size()<DETAILS_MATCH_TABLE->GetNumberRows()){
+		DETAILS_MATCH_TABLE->DeleteRows(data->listEvent.size(),DETAILS_MATCH_TABLE->GetNumberRows()-data->listEvent.size());
+	}
     for (int index = 0; index < data->listEvent.size(); index++)
 	{
 		DETAILS_MATCH_TABLE->SetCellValue(index,0,data->listEvent[index].timeline);

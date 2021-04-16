@@ -176,6 +176,12 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 }
 void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 {
+	if(data->LstMatch.size()>LIST_MATCH->GetNumberRows()){
+		LIST_MATCH->AppendRows(data->LstMatch.size()-LIST_MATCH->GetNumberRows());
+	}
+	else if(data->LstMatch.size()<LIST_MATCH->GetNumberRows()){
+		LIST_MATCH->DeleteRows(data->LstMatch.size(),LIST_MATCH->GetNumberRows()-data->LstMatch.size());
+	} 
 	for (int index = 0; index < data->LstMatch.size(); index++)
 	{
 		LIST_MATCH->SetCellValue(index, 0, data->LstMatch[index].id);
