@@ -103,8 +103,7 @@ ListMatch::ListMatch(vector<char> response)
         vector<char> cache;
         cache.resize(expectedSize);
         extractBuffer((char *)&cache[0], expectedSize, response);
-        MatchInfo *temp = new MatchInfo(cache);
-        LstMatch.push_back(*temp);
+        LstMatch.emplace_back(cache);
     }
 }
 void ListMatch::updateData(vector<char> response)
@@ -122,8 +121,7 @@ void ListMatch::updateData(vector<char> response)
         vector<char> cache;
         cache.resize(expectedSize);
         extractBuffer((char *)&cache[0], expectedSize, response);
-        MatchInfo *temp = new MatchInfo(cache);
-        LstMatch.push_back(*temp);
+        LstMatch.emplace_back(cache);
     }
 }
 void ListMatch::toByteStream(vector<char> &result)
@@ -258,8 +256,7 @@ MatchDetails::MatchDetails(vector<char> response)
         vector<char> cache;
         cache.resize(expectedSize);
         extractBuffer((char *)&cache[0], expectedSize, response);
-        Event *temp = new Event(cache);
-        listEvent.push_back(*temp);
+        listEvent.emplace_back(cache);
     }
 }
 void MatchDetails::updateData(vector<char> response)
@@ -276,8 +273,7 @@ void MatchDetails::updateData(vector<char> response)
         vector<char> cache;
         cache.resize(expectedSize);
         extractBuffer((char *)&cache[0], expectedSize, response);
-        Event *temp = new Event(cache);
-        listEvent.push_back(*temp);
+        listEvent.emplace_back(cache);
     }
 }
 void MatchDetails::toByteStream(vector<char> &result)
