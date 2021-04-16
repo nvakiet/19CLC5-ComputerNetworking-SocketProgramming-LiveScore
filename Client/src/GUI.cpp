@@ -35,6 +35,8 @@ void MyApp::displayNotif(const wxString &notif) {
                  wxOK | wxICON_INFORMATION);
 }
 
+wxDEFINE_EVENT(LIST_RECV, wxThreadEvent);
+
 void MyApp::socketHandling() {
     wxWindow *currentWindow = nullptr;
     //While the app is still opening
@@ -49,7 +51,7 @@ void MyApp::socketHandling() {
                 client->result = -100;
                 client->recvData(&rCode, sizeof(char));
                 switch (rCode) {
-                    case Client::Login:
+                    case Client::Login: {
                         //The server send back login result
                         client->recvData((char*)&(client->result), sizeof(int));
                         if (client->result == 0) {
@@ -57,11 +59,24 @@ void MyApp::socketHandling() {
                         }
                         client->setMsg(Client::Login);
                         break;
-                    case Client::Register:
+                    }
+                    case Client::Register: {
                         //The server send back login result
                         client->recvData((char*)&(client->result), sizeof(int));
                         client->setMsg(Client::Register);
                         break;
+                    }
+                    case Client::Matches: {
+                        //The server send back list of matches
+                        client->recvData((char *)&(client->extractSize), sizeof(size_t));
+                        cout << "Expected " << client->extractSize << endl;
+                        client->recvData(nullptr, client->extractSize);
+                        cout << "Receive " << client->connector->buf.size() << endl;
+                        cout << "Received match list from server" << endl;
+                        wxThreadEvent e(LIST_RECV);
+                        currentWindow->GetEventHandler()->QueueEvent(e.Clone());
+                        break;
+                    }
                     default:
                         cerr << "Invalid request code." << endl;
                         client->setMsg('\0');

@@ -9,6 +9,7 @@ Client::Client() {
     connector = nullptr;
     handler = WSA_INVALID_EVENT;
     result = -100;
+    extractSize = 0;
 }
 
 Client::~Client() {
@@ -125,7 +126,10 @@ void Client::recvData(char *buf, size_t dataSize, bool isContinuous) {
         connector->byteRecv = 0;
     }
     if (buf == nullptr) {
-        connector->setBuffer(nullptr, dataSize);
+        connector->buf.reserve(2 * dataSize);
+        connector->buf.resize(dataSize);
+        connector->dataBuf.buf = &(connector->buf[0]);
+        connector->dataBuf.len = dataSize;
     }
     else {
         connector->dataBuf.buf = buf;
@@ -211,6 +215,7 @@ bool Client::login(const string &username, const string &password, string& notif
         return false;
     }
     char rCode = Msg::Login;
+    connector->lastMsg = Msg::Pending;
     try {
         //Send command
         sendData(&rCode, sizeof(char));
@@ -282,6 +287,7 @@ bool Client::registerAcc(const string &username, const string &password, string&
         return false;
     }
     char rCode = Msg::Register;
+    connector->lastMsg = Msg::Pending;
     try {
         //Send command
         sendData(&rCode, sizeof(char));
@@ -332,6 +338,36 @@ bool Client::registerAcc(const string &username, const string &password, string&
     else notif = "Unable to retrieve registration result. Register Failed!";
     connector->lastMsg = '\0';
     return false;
+}
+
+bool Client::requestMatches() {
+    if (isInvalid()) {
+        cerr << "Connection has been closed." << endl;
+        return false;
+    }
+    if (connector->lastMsg == Msg::Pending) {
+        cerr << "Client is busy. Try again" << endl;
+        return false;
+    }
+    connector->lastMsg = Msg::Pending;
+    char rCode = Msg::Matches;
+    try {
+        sendData(&rCode, sizeof(char));
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
+        return false;
+    }
+    return true;
+}
+
+void Client::extractMatches(ListMatch *&list) {
+    vector<char> byteStream;
+    byteStream.resize(extractSize);
+    connector->extractBuffer(&byteStream[0], extractSize);
+    if (list != nullptr) {
+        delete list;
+    }
+    list = new ListMatch(byteStream);
 }
 
 bool Client::isAdminAccount(){

@@ -62,7 +62,8 @@ class MainFrame : public wxFrame
 		virtual void OnRefreshClick( wxCommandEvent& event );
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
 		virtual void OnSearchDetailsDClick( wxGridEvent& event );
-	
+		virtual void OnReceiveList(wxThreadEvent &event);
+
 	public:
 		MainFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 512,371 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
 		virtual void DisplayData();
@@ -126,6 +127,7 @@ class DetailFrame_ForClient : public wxFrame
 	
 };
 
+wxDECLARE_EVENT(LIST_RECV, wxThreadEvent);
 class MyApp : public wxApp
 {
 private:

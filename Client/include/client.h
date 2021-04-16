@@ -23,16 +23,18 @@ class Client
 {
 protected:
     WSAEVENT handler;
-    SocketInfo* connector;
+    
     WSANETWORKEVENTS netEvent;
     addrinfo *conInfo;
     WSADATA wsaData;
 
 public:
+    SocketInfo* connector;
     User account;
     int result;
+    size_t extractSize;
     //List of all messages the server can handle from clients
-    enum Msg {Login = '1', Register = '2'};
+    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3'};
     //Start winsock
     Client();
     //Log out the account, close socket and clean up winsock, connection infos
@@ -57,6 +59,10 @@ public:
     bool login(const string &username, const string &password,string& notif);
     //Register a new account to the server
     bool registerAcc(const string &username, const string &password, string& notif);
+    //Request a list of matches from the server
+    bool requestMatches();
+    //Extract the match list from the buffer
+    void extractMatches(ListMatch *&list);
     // Check if client 
     bool isAdminAccount();
     //Check if the socket is valid

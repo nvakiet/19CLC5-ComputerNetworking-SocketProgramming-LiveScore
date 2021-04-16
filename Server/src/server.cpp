@@ -185,7 +185,10 @@ void Server::recvData(int sockIndex, char *buf, size_t dataSize, bool isContinuo
         socketList[sockIndex]->byteRecv = 0;
     }
     if (buf == nullptr) {
-        socketList[sockIndex]->setBuffer(nullptr, dataSize);
+        socketList[sockIndex]->buf.reserve(2 * dataSize);
+        socketList[sockIndex]->buf.resize(dataSize);
+        socketList[sockIndex]->dataBuf.buf = &(socketList[sockIndex]->buf[0]);
+        socketList[sockIndex]->dataBuf.len = dataSize;
     }
     else {
         socketList[sockIndex]->dataBuf.buf = buf;
@@ -355,6 +358,11 @@ int Server::handleRequest(char rCode, int iSock) {
             return -1;
         }
     }
+    if (rCode == Msg::Matches) {
+        socketList[iSock]->lastMsg = rCode;
+        cout << "User " << accounts[iSock - 1].username << " is requesting match list" << endl;
+        return 1;
+    }
     return 0;
 }
 
@@ -379,7 +387,7 @@ bool Server::handleFeedback(int iSock) {
             removeSocket(iSock, false);
             return true;
         }
-        socketList[iSock]->lastMsg = '0';
+        socketList[iSock]->lastMsg = Msg::Pending;
         return true;
     }
     //REGISTER RESULT
@@ -399,7 +407,30 @@ bool Server::handleFeedback(int iSock) {
             removeSocket(iSock);
             return true;
         }
-        socketList[iSock]->lastMsg = '0';
+        socketList[iSock]->lastMsg = Msg::Pending;
+        return true;
+    }
+    //MATCH LIST QUERY RESULT
+    if (socketList[iSock]->lastMsg == Msg::Matches) {
+        ListMatch list;
+        db.queryMatches(list);
+        vector<char> bytes;
+        list.toByteStream(bytes);
+        size_t byteSize = bytes.size();
+        try {
+            sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
+            sendData(iSock, (char *)&byteSize, sizeof(size_t));
+            cout << "Expected Size " << byteSize << endl;
+            sendData(iSock, &bytes[0], byteSize);
+            cout << "Sent " << socketList[iSock]->byteSend << endl;
+        } catch (const NetworkException& e) {
+            cerr << e.what() << endl;
+            cerr << "Failed to send match list to user " << accounts[iSock - 1].username << ". Connection will be closed." << endl;
+            removeSocket(iSock);
+            return false;
+        }
+        cout << "Match list has been sent to user " << accounts[iSock - 1].username << endl;
+        socketList[iSock]->lastMsg = Msg::Pending;
         return true;
     }
     return true;

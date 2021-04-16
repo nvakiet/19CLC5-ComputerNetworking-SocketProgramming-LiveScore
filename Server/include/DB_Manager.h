@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ctime>
 
 using namespace soci;
 using namespace std;
@@ -27,6 +28,8 @@ public:
     //Change the login status of user in database to 'N' (logout)
     void logoutUser(const string &username);
     void logoutAll();
+    //Get match list from database
+    void queryMatches(ListMatch &list);
 };
 
 #endif

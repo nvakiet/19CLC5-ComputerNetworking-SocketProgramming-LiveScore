@@ -117,6 +117,7 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	this->DisplayData();
 
 
+
 	this->Centre(wxBOTH);
 
 	// Connect Events
@@ -124,6 +125,10 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnRefreshClick), NULL, this);
 	SEARCH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(MainFrame::OnSearchByIDClick), NULL, this);
 	LIST_MATCH->Connect(wxEVT_GRID_LABEL_LEFT_DCLICK, wxGridEventHandler(MainFrame::OnSearchDetailsDClick), NULL, this);
+	//TEST THREAD EVENT
+	Bind<>(LIST_RECV, MainFrame::OnReceiveList, this);
+	//TEST SEND MATCH LIST
+	client->requestMatches();
 }
 
 MainFrame::~MainFrame()
@@ -174,6 +179,16 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 		dframe->Show();
 	}
 }
+
+void MainFrame::OnReceiveList(wxThreadEvent &event) {
+	cout << "Event triggered" << endl;
+	client->extractMatches(data);
+	for (auto match : data->LstMatch) {
+		cout << match.id << ' ' << match.timeMatch << ' ' << match.teamA << ' ' << match.scoreA << " - " << match.scoreB << ' ' << match.teamB << endl;
+	}
+	this->DisplayData();
+}
+
 void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 {
 	if(data->LstMatch.size()>LIST_MATCH->GetNumberRows()){

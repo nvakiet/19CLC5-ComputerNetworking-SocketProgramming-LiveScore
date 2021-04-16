@@ -61,7 +61,6 @@ int main(int argc, char** argv) {
          }
          if (result == 1) {
             if (!server.handleFeedback(iSock)) {
-               cerr << "Failed to send feedback to client socket number " << iSock << endl;
                continue;
             }
          }
@@ -79,3 +78,25 @@ int main(int argc, char** argv) {
    return 0;
 
 }
+
+
+
+
+//TEST DB_MANAGER
+// #include "DB_Manager.h"
+
+// int main() {
+//    DB_Manager db("DRIVER=ODBC Driver 17 for SQL Server;SERVER=localhost;DATABASE=DB_LIVESCORE;Trusted_Connection=Yes");
+//    ListMatch list;
+//    db.queryMatches(list);
+//    for (auto match : list.LstMatch) {
+//       cout << match.id << ' ' << match.timeMatch << ' ' << match.teamA << ' ' << match.scoreA << " - " << match.scoreB << ' ' << match.teamB << endl;
+//    }
+//    cout << "=================================================" << endl;
+//    vector<char> buf;
+//    list.toByteStream(buf);
+//    ListMatch another(buf);
+//    for (auto match : another.LstMatch) {
+//       cout << match.id << ' ' << match.timeMatch << ' ' << match.teamA << ' ' << match.scoreA << " - " << match.scoreB << ' ' << match.teamB << endl;
+//    }
+// }
