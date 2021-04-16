@@ -187,6 +187,7 @@ void MainFrame::OnReceiveList(wxThreadEvent &event) {
 		cout << match.id << ' ' << match.timeMatch << ' ' << match.teamA << ' ' << match.scoreA << " - " << match.scoreB << ' ' << match.teamB << endl;
 	}
 	this->DisplayData();
+	client->setMsg('\0');
 }
 
 void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
