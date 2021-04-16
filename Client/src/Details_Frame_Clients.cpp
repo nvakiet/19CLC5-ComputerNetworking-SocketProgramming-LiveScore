@@ -4,8 +4,9 @@
 DetailFrame_ForClient::DetailFrame_ForClient(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
     //FOR DEBUG ONLY:
-    //data = new MatchDetails();
-
+    //initialize data;
+    vector<char> temp;
+	data = new MatchDetails(temp);
 
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
     this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));

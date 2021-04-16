@@ -4,7 +4,8 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	client = a;
 	//FOR DEBUG ONLY:
 	// init ListMatch
-	//data = new ListMatch();
+	vector<char> temp;
+	data = new ListMatch(temp);
 
 	this->SetSizeHints(wxSize(-1, -1), wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));

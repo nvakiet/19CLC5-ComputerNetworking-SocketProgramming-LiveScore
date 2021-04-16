@@ -14,7 +14,7 @@ int MyApp::OnExit()
     t->join();
     client->closeConnection();
     delete client;
-    lframe->Destroy();
+    lframe->Close();
     mframe->Destroy();
     df_admin->Destroy();
     df_client->Destroy();
