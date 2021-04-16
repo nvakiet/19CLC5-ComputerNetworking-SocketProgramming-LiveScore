@@ -198,6 +198,7 @@ void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 	if(data->LstMatch.size()>LIST_MATCH->GetNumberRows()){
 		LIST_MATCH->AppendRows(data->LstMatch.size()-LIST_MATCH->GetNumberRows());
 	}
+	LIST_MATCH->ClearGrid();
 	for (int index = 0; index < data->LstMatch.size(); index++)
 	{
 		LIST_MATCH->SetCellValue(index, 0, data->LstMatch[index].id);

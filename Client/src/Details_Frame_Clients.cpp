@@ -153,7 +153,7 @@ void DetailFrame_ForClient::DisplayData(){
     if(data->listEvent.size()>DETAILS_MATCH_TABLE->GetNumberRows()){
 		DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size()-DETAILS_MATCH_TABLE->GetNumberRows());
 	}
-	
+	DETAILS_MATCH_TABLE->ClearGrid();
     for (int index = 0; index < data->listEvent.size(); index++)
 	{
 		DETAILS_MATCH_TABLE->SetCellValue(index,0,data->listEvent[index].timeline);
