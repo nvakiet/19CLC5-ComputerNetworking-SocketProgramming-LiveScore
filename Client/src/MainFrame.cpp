@@ -4,8 +4,8 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	client = a;
 	//FOR DEBUG ONLY:
 	// init ListMatch
-	vector<char> temp;
-	data = new ListMatch(temp);
+	//vector<char> temp;
+	data = new ListMatch();
 
 	this->SetSizeHints(wxSize(-1, -1), wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
@@ -67,7 +67,7 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	LIST_MATCH = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0);
 
 	// Grid
-	LIST_MATCH->CreateGrid(data->LstMatch.size(), 5);
+	LIST_MATCH->CreateGrid(20, 5);
 	LIST_MATCH->EnableEditing(false);
 	LIST_MATCH->EnableGridLines(true);
 	LIST_MATCH->SetGridLineColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT));
@@ -114,7 +114,7 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	mainBox->Fit(this);
 
 	//DisplayData
-	this->DisplayData();
+	//this->DisplayData();
 
 
 
@@ -157,6 +157,9 @@ void MainFrame::OnExitFrame(wxCloseEvent &event)
 
 void MainFrame::OnRefreshClick(wxCommandEvent &event)
 {
+	if(client->getMsg() == '\0'){
+		client->requestMatches();
+	}
 	// Client repeats sending the request to the server
 }
 void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
@@ -194,9 +197,6 @@ void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 	if(data->LstMatch.size()>LIST_MATCH->GetNumberRows()){
 		LIST_MATCH->AppendRows(data->LstMatch.size()-LIST_MATCH->GetNumberRows());
 	}
-	else if(data->LstMatch.size()<LIST_MATCH->GetNumberRows()){
-		LIST_MATCH->DeleteRows(data->LstMatch.size(),LIST_MATCH->GetNumberRows()-data->LstMatch.size());
-	} 
 	for (int index = 0; index < data->LstMatch.size(); index++)
 	{
 		LIST_MATCH->SetCellValue(index, 0, data->LstMatch[index].id);

@@ -6,8 +6,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 {
 	//FOR DEBUG ONLY:
     //initialize data;
-	vector<char>temp;
-	data = new MatchDetails(temp);
+	data = new MatchDetails();
 
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
@@ -132,7 +131,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	DETAILS_MATCH_TABLE = new wxGrid(this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), 0);
 
 	// Grid
-	DETAILS_MATCH_TABLE->CreateGrid(data->listEvent.size(), 4);
+	DETAILS_MATCH_TABLE->CreateGrid(15, 4);
 	DETAILS_MATCH_TABLE->EnableEditing(false);
 	DETAILS_MATCH_TABLE->EnableGridLines(true);
 	DETAILS_MATCH_TABLE->SetGridLineColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNHIGHLIGHT));
@@ -174,8 +173,6 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	this->SetSizer(mainBox);
 	this->Layout();
 	mainBox->Fit(this);
-	//DisplayData
-	this->DisplayData();
 	
 	this->Centre(wxBOTH);
 
@@ -188,9 +185,6 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 void DetailFrame_ForAdmin::DisplayData(){
 	if(data->listEvent.size()>DETAILS_MATCH_TABLE->GetNumberRows()){
 		DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size()-DETAILS_MATCH_TABLE->GetNumberRows());
-	}
-	else if(data->listEvent.size()<DETAILS_MATCH_TABLE->GetNumberRows()){
-		DETAILS_MATCH_TABLE->DeleteRows(data->listEvent.size(),DETAILS_MATCH_TABLE->GetNumberRows()-data->listEvent.size());
 	}
     for (int index = 0; index < data->listEvent.size(); index++)
 	{
