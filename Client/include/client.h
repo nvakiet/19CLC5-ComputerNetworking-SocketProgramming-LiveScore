@@ -23,13 +23,12 @@ class Client
 {
 protected:
     WSAEVENT handler;
-    
+    SocketInfo* connector;
     WSANETWORKEVENTS netEvent;
     addrinfo *conInfo;
     WSADATA wsaData;
 
 public:
-    SocketInfo* connector;
     User account;
     int result;
     size_t extractSize;

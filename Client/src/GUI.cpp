@@ -69,12 +69,13 @@ void MyApp::socketHandling() {
                     case Client::Matches: {
                         //The server send back list of matches
                         client->recvData((char *)&(client->extractSize), sizeof(size_t));
-                        cout << "Expected " << client->extractSize << endl;
+                        //cout << "Expected " << client->extractSize << endl;
                         client->recvData(nullptr, client->extractSize);
-                        cout << "Receive " << client->connector->buf.size() << endl;
+                        //cout << "Receive " << client->connector->buf.size() << endl;
                         cout << "Received match list from server" << endl;
                         wxThreadEvent e(LIST_RECV);
                         currentWindow->GetEventHandler()->QueueEvent(e.Clone());
+                        client->setMsg(Client::Matches);
                         break;
                     }
                     default:
