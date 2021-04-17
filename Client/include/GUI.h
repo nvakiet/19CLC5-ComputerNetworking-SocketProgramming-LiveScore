@@ -8,8 +8,9 @@
 #include "client.h"
 #include"DB_Structs.h"
 #include <wx/string.h>
+#include <wx/timer.h>
 #ifndef WX_PRECOMP
-#include <wx/wx.h>
+	#include <wx/wx.h>
 #endif
 
 
@@ -43,12 +44,15 @@ class LoginFrame : public wxFrame
 	
 };
 
+class MainRefreshTimer;
 
 class MainFrame : public wxFrame 
 {
 	private:
 		Client *client;
 		ListMatch* data;
+		MainRefreshTimer* timer;
+
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
@@ -63,13 +67,15 @@ class MainFrame : public wxFrame
 		virtual void OnSearchByIDClick( wxCommandEvent& event );
 		virtual void OnSearchDetailsDClick( wxGridEvent& event );
 		virtual void OnReceiveList(wxThreadEvent &event);
-
+		virtual void OnSocketClosed(wxThreadEvent &event);
+		
 	public:
 		MainFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 512,371 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
 		virtual void DisplayData();
 		~MainFrame();
-	
+		void OnTimedRefresh();
 };
+
 class DetailFrame_ForAdmin : public wxFrame 
 {
 	private:
@@ -127,7 +133,11 @@ class DetailFrame_ForClient : public wxFrame
 	
 };
 
+void displayNotif(const wxString &notif);
+
 wxDECLARE_EVENT(LIST_RECV, wxThreadEvent);
+wxDECLARE_EVENT(SOCK_CLOSE, wxThreadEvent);
+wxDECLARE_EVENT(TIMED_REFRESH, wxTimerEvent);
 class MyApp : public wxApp
 {
 private:
@@ -143,9 +153,19 @@ public:
     bool OnInit();
 	void showMainFrame();
     int OnExit();
-	void displayNotif(const wxString &notif);
+	
 };
 DECLARE_APP(MyApp);
+
+
+class MainRefreshTimer : public wxTimer {
+    protected:
+        MainFrame *mframe;
+    public:
+        void Init(MainFrame* obj);
+        void Notify();
+};
+
 
 #endif
 

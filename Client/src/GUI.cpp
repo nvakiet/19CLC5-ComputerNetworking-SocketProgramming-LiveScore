@@ -14,10 +14,10 @@ int MyApp::OnExit()
     t->join();
     client->closeConnection();
     delete client;
-    lframe->Close();
-    mframe->Destroy();
-    df_admin->Destroy();
-    df_client->Destroy();
+    wxDELETE(lframe);
+    wxDELETE(mframe);
+    wxDELETE(df_admin);
+    wxDELETE(df_client);
     delete t;
     close(true);
     return 0;
@@ -29,13 +29,13 @@ void MyApp::showMainFrame()
     mframe->Show(true);
 }
 
-
-void MyApp::displayNotif(const wxString &notif) {
+void displayNotif(const wxString &notif) {
     wxMessageBox(notif, wxT("Message"),
                  wxOK | wxICON_INFORMATION);
 }
 
 wxDEFINE_EVENT(LIST_RECV, wxThreadEvent);
+wxDEFINE_EVENT(SOCK_CLOSE, wxThreadEvent);
 
 void MyApp::socketHandling() {
     wxWindow *currentWindow = nullptr;
@@ -93,8 +93,9 @@ void MyApp::socketHandling() {
             client->closeConnection();;
         }
         if (client->isInvalid() && !client->account.username.empty()) {
-            displayNotif("Server disconnected.");
             //HANDLE FRAME JUMPING BY THROWING AN EVENT HERE FOR EVENT HANDLERS TO RESOLVE
+            wxThreadEvent e(SOCK_CLOSE);
+            currentWindow->GetEventHandler()->QueueEvent(e.Clone());
         }
     }
 }

@@ -420,9 +420,9 @@ bool Server::handleFeedback(int iSock) {
         try {
             sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
             sendData(iSock, (char *)&byteSize, sizeof(size_t));
-            cout << "Expected Size " << byteSize << endl;
+            //cout << "Expected Size " << byteSize << endl;
             sendData(iSock, &bytes[0], byteSize);
-            cout << "Sent " << socketList[iSock]->byteSend << endl;
+            //cout << "Sent " << socketList[iSock]->byteSend << endl;
         } catch (const NetworkException& e) {
             cerr << e.what() << endl;
             cerr << "Failed to send match list to user " << accounts[iSock - 1].username << ". Connection will be closed." << endl;

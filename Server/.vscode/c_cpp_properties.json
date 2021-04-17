@@ -4,8 +4,6 @@
             "name": "GCC",
             "includePath": [
                 "${workspaceFolder}/**",
-                "../WxWidgets/include",
-                "../WxWidgets/lib/gcc810_x64_dll/mswud",
                 "../SOCI_4.0.1/include/soci",
                 "../SOCI_4.0.1/include"
             ],
