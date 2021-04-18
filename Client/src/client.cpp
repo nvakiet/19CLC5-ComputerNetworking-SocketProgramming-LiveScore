@@ -232,52 +232,8 @@ bool Client::login(const string &username, const string &password, string& notif
         notif = "Failed to send login info to server";
         return false;
     }
-    //Receive login results from server
-    int size = sizeof(int);
-    // do {
-    //     if (connector->byteRecv >= size) {
-    //         cout << "Login Result = " << result << endl;
-    //         if (result == 0) {
-    //             notif = "Login success, welcome " + username;
-    //             account.username = username;
-    //             connector->lastMsg = '\0';
-    //             return true;
-    //         }
-    //         else if (result == 1) {
-    //             notif = "User " + username + " already logged in";
-    //             connector->lastMsg = '\0';
-    //             return false;
-    //         }
-    //         else if (result == -1) {
-    //             notif = "Wrong username or password. Try again.";
-    //             connector->lastMsg = '\0';
-    //             return false;
-    //         }
-    //     }
-    // } while (connector->byteRecv < size && connector->socket != INVALID_SOCKET);
-    while (connector->byteRecv < size && connector->socket != INVALID_SOCKET) {
-        continue;
-    }
-    cout << "Login Result = " << result << endl;
-    if (result == 0) {
-        notif = "Login success, welcome " + username;
-        account.username = username;
-        connector->lastMsg = '\0';
-        return true;
-    }
-    else if (result == 1) {
-        notif = "User " + username + " already logged in";
-        connector->lastMsg = '\0';
-        return false;
-    }
-    else if (result == -1) {
-        notif = "Wrong username or password. Try again.";
-        connector->lastMsg = '\0';
-        return false;
-    }
-    else notif = "Unable to retrieve login result. Login Failed!";
-    connector->lastMsg = '\0';
-    return false;
+    account.username = username;
+    return true;
 }
 
 bool Client::registerAcc(const string &username, const string &password, string& notif) {
@@ -304,40 +260,8 @@ bool Client::registerAcc(const string &username, const string &password, string&
         notif = "Failed to send login info to server";
         return false;
     }
-    //Receive register results from server
-    int size = sizeof(int);
-    // do {
-    //     if (connector->byteRecv >= size) {
-    //         cout << "Register Result = " << result << endl;
-    //         if (result == 0) {
-    //             notif = "Register success. Please login with your account";
-    //             connector->lastMsg = '\0';
-    //             return true;
-    //         }
-    //         else if (result == 1) {
-    //             notif = "Username: " + username + " already exists";
-    //             connector->lastMsg = '\0';
-    //             return false;
-    //         }
-    //     }
-    // } while (connector->byteRecv < size && connector->socket != INVALID_SOCKET);
-    while (connector->byteRecv < size && connector->socket != INVALID_SOCKET) {
-        continue;
-    }
-    cout << "Register Result = " << result << endl;
-    if (result == 0) {
-        notif = "Register success. Please login with your account";
-        connector->lastMsg = '\0';
-        return true;
-    }
-    else if (result == 1) {
-        notif = "Username: " + username + " already exists";
-        connector->lastMsg = '\0';
-        return false;
-    }
-    else notif = "Unable to retrieve registration result. Register Failed!";
-    connector->lastMsg = '\0';
-    return false;
+
+    return true;
 }
 
 bool Client::requestMatches() {

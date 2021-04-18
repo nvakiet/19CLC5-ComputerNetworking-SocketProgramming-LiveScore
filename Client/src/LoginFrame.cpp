@@ -123,6 +123,8 @@ LoginFrame::LoginFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxStri
     this->Connect(wxEVT_CLOSE_WINDOW, wxCloseEventHandler(LoginFrame::OnExitFrame));
     loginButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(LoginFrame::OnLoginClick), NULL, this);
     registerButton->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(LoginFrame::OnRegisterClick), NULL, this);
+    Bind<>(LOGIN_RESULT, LoginFrame::OnLoginResult, this);
+    Bind<>(REGIS_RESULT, LoginFrame::OnRegisterResult, this);
 }
 
 LoginFrame::~LoginFrame()
@@ -152,18 +154,8 @@ void LoginFrame::OnLoginClick(wxCommandEvent &event)
     // mframe->Show(true);
     if (client->connectTo(inputServerText->GetValue().ToStdString()))
     {
-        string notif;
-        if (client->login(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString(), notif))
-        {
-            ErrorMsg(notif);
-            if (client->isAdminAccount()) {
-                ErrorMsg("Admin mode activated!");
-            }
-            MainFrame *mframe = new MainFrame(client, NULL);
-            this->Close();
-            mframe->Show(true);
-        }
-        else
+        string notif = "Unexpected Error";
+        if (!client->login(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString(), notif))
         {
             // exception window : Login Failed
             ErrorMsg(notif);
@@ -184,7 +176,8 @@ void LoginFrame::OnRegisterClick(wxCommandEvent &event)
     {
         string notif;
         bool result = client->registerAcc(inputUserText->GetValue().ToStdString(), inputPassText->GetValue().ToStdString(), notif);
-        ErrorMsg(notif);
+        if (!result)
+            ErrorMsg(notif);
         //client->closeConnection();
     }
     else
@@ -199,4 +192,41 @@ void LoginFrame::ErrorMsg(wxString msg)
 {
     wxMessageBox(msg, wxT("Message"),
                  wxOK | wxICON_INFORMATION, this);
+}
+
+
+void LoginFrame::OnLoginResult(wxThreadEvent &event) {
+    if (event.GetInt() == 0) {
+        ErrorMsg("Login success, welcome " + client->account.username);
+        if (client->isAdminAccount()) {
+            ErrorMsg("Admin mode activated!");
+        }
+        MainFrame *mframe = new MainFrame(client, NULL);
+        this->Close();
+        mframe->Show(true);
+    }
+    else if (event.GetInt() == 1) {
+        ErrorMsg("User " + client->account.username + " already logged in");
+        inputUserText->Clear();
+        inputPassText->Clear();
+        client->account.username.clear();
+    }
+    else if (event.GetInt() == -1) {
+        ErrorMsg("Wrong username or password. Try again.");
+        inputUserText->Clear();
+        inputPassText->Clear();
+        client->account.username.clear();
+    }
+    client->setMsg('\0');
+}
+
+void LoginFrame::OnRegisterResult(wxThreadEvent &event) {
+    if (event.GetInt() == 0) {
+        ErrorMsg("Register success. Please login with your account");
+        
+    }
+    else if (event.GetInt() == 1) {
+        ErrorMsg("Username: " + client->account.username + " already exists");
+    }
+    client->setMsg('\0');
 }

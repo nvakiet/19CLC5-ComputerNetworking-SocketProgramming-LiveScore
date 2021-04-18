@@ -35,7 +35,9 @@ class LoginFrame : public wxFrame
     	virtual void ErrorMsg(wxString);
 		virtual void OnLoginClick( wxCommandEvent& event );
 		virtual void OnRegisterClick( wxCommandEvent& event );
-	
+		void OnLoginResult(wxThreadEvent &event);
+		void OnRegisterResult(wxThreadEvent &event);
+
 	public:
 		
 		LoginFrame(Client*&, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 600,500 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxFRAME_SHAPED|wxMAXIMIZE_BOX|wxRESIZE_BORDER|wxALWAYS_SHOW_SB|wxFULL_REPAINT_ON_RESIZE );
@@ -141,6 +143,8 @@ void displayNotif(const wxString &notif);
 
 wxDECLARE_EVENT(LIST_RECV, wxThreadEvent);
 wxDECLARE_EVENT(SOCK_CLOSE, wxThreadEvent);
+wxDECLARE_EVENT(LOGIN_RESULT, wxThreadEvent);
+wxDECLARE_EVENT(REGIS_RESULT, wxThreadEvent);
 wxDECLARE_EVENT(TIMED_REFRESH, wxTimerEvent);
 class MyApp : public wxApp
 {

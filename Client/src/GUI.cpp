@@ -36,6 +36,8 @@ void displayNotif(const wxString &notif) {
 
 wxDEFINE_EVENT(LIST_RECV, wxThreadEvent);
 wxDEFINE_EVENT(SOCK_CLOSE, wxThreadEvent);
+wxDEFINE_EVENT(LOGIN_RESULT, wxThreadEvent);
+wxDEFINE_EVENT(REGIS_RESULT, wxThreadEvent);
 
 void MyApp::socketHandling() {
     wxWindow *currentWindow = nullptr;
@@ -58,12 +60,18 @@ void MyApp::socketHandling() {
                             client->recvData((char*)&(client->account.isAdmin), sizeof(bool));
                         }
                         client->setMsg(Client::Login);
+                        wxThreadEvent e(LOGIN_RESULT);
+                        e.SetInt(client->result);
+                        currentWindow->GetEventHandler()->QueueEvent(e.Clone());
                         break;
                     }
                     case Client::Register: {
                         //The server send back login result
                         client->recvData((char*)&(client->result), sizeof(int));
                         client->setMsg(Client::Register);
+                        wxThreadEvent e(REGIS_RESULT);
+                        e.SetInt(client->result);
+                        currentWindow->GetEventHandler()->QueueEvent(e.Clone());
                         break;
                     }
                     case Client::Matches: {
