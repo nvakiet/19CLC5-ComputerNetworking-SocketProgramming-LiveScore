@@ -59,13 +59,14 @@ struct Event
 struct MatchDetails
 {
     string nameGroup;
-    string startDate;
+    //string startDate;
     MatchInfo *match;
     vector<Event> listEvent;
     //FOR DEBUG ONLY:
     //MatchDetails();
     MatchDetails() = default;
     MatchDetails(vector<char> response);
+    MatchDetails(const vector<Event> &scores, const vector<Event> &cards);
     void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };

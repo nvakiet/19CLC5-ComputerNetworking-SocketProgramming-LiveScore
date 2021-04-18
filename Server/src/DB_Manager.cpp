@@ -122,3 +122,92 @@ void DB_Manager::queryMatches(ListMatch &list) {
         }
     }
 }
+
+bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
+    //Get match group name
+    string groupname;
+    sql << "select gm.GROUPNAME from MATCH m join GROUP_MATCH gm on m.ID_GROUP = gm.GROUPID where m.ID = :ID", into(groupname), use(ID);
+    if (!sql.got_data()) {
+        cerr << "Match ID " << ID << " doesn't exist." << endl;
+        return false;
+    }
+
+    vector<Event> cards;
+    vector<Event> scores;
+
+    //Get the card info of the match
+    rowset<row> rs = (sql.prepare << "select * from DETAILS_CARD dtc where dtc.IDMATCH = :ID order by dtc.MINUTES_CARD asc, dtc.OVERTIME asc", use(ID));
+    for (auto it = rs.begin(); it != rs.end(); ++it) {
+        cards.push_back(Event());
+        cards.back().isGoal = false;
+        int minute = (*it).get<int>(1);
+        int overtime = (*it).get<int>(2);
+        cards.back().timeline = to_string(minute) + '\'';
+        if (overtime != 0) {
+            cards.back().timeline += " + " + to_string(overtime) + '\'';
+        }
+        //Get card team A
+        if ((*it).get_indicator(3) != i_null) {
+            //Get first character of the card: R or Y
+            cards.back().card = (*it).get<string>(3)[0] + " - ";
+        }
+        else {
+            cards.back().card = "  - ";
+        }
+        //Get card team B
+        if ((*it).get_indicator(4) != i_null) {
+            //Get first character of the card: R or Y
+            cards.back().card += (*it).get<string>(4)[0];
+        }
+        else {
+            cards.back().card += ' ';
+        }
+        //Get player team A
+        if ((*it).get_indicator(5) != i_null) {
+            cards.back().namePlayerTeamA = (*it).get<string>(5);
+        }
+        //Get player team B
+        if ((*it).get_indicator(6) != i_null) {
+            cards.back().namePlayerTeamB = (*it).get<string>(6);
+        }
+    }
+
+    //Get match scores
+    rowset<row> rs = (sql.prepare << "select * from DETAILS_SCORE dts where dts.IDMATCH = :ID order by dts.MINUTES_SCORE asc, dts.OVERTIME asc", use(ID));
+    for (auto it = rs.begin(); it != rs.end(); ++it) {
+        scores.push_back(Event());
+        scores.back().isGoal = true;
+        int minute = (*it).get<int>(1);
+        int overtime = (*it).get<int>(2);
+        scores.back().timeline = to_string(minute) + '\'';
+        if (overtime != 0) {
+            scores.back().timeline += " + " + to_string(overtime) + '\'';
+        }
+        //Get score team A
+        if ((*it).get_indicator(3) != i_null) {
+            scores.back().scoreA = (*it).get<int>(3);
+        }
+        else {
+            scores.back().scoreA = 0;
+        }
+        //Get score team B
+        if ((*it).get_indicator(4) != i_null) {
+            scores.back().scoreB = (*it).get<int>(4);
+        }
+        else {
+            scores.back().scoreB = 0;
+        }
+        //Get player team A
+        if ((*it).get_indicator(5) != i_null) {
+            scores.back().namePlayerTeamA = (*it).get<string>(5);
+        }
+        //Get player team B
+        if ((*it).get_indicator(6) != i_null) {
+            scores.back().namePlayerTeamB = (*it).get<string>(6);
+        }
+    }
+    //Construct the match details
+    match = MatchDetails(scores, cards);
+    match.nameGroup = groupname;
+    return true;
+}
