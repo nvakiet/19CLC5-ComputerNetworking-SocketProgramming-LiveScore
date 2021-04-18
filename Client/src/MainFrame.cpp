@@ -119,8 +119,6 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	//DisplayData
 	//this->DisplayData();
 
-
-
 	this->Centre(wxBOTH);
 
 	// Connect Events
@@ -136,7 +134,6 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 	timer = new MainRefreshTimer;
 	timer->Init(this);
 	timer->Start(30000);
-	
 }
 
 MainFrame::~MainFrame()
@@ -168,7 +165,8 @@ void MainFrame::OnExitFrame(wxCloseEvent &event)
 
 void MainFrame::OnRefreshClick(wxCommandEvent &event)
 {
-	if(client->getMsg() == '\0'){
+	if (client->getMsg() == '\0')
+	{
 		timer->Start(30000);
 		client->requestMatches();
 	}
@@ -178,50 +176,64 @@ void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
 {
 	bool isValidID = false;
 	// check data is null
-	if(data == nullptr){
+	if (data == nullptr)
+	{
 		return;
 	}
 	// Check if the ID is valid
-	for(int index =0; index < data->LstMatch.size(); index++ ){
-		if(InputIDText->GetValue().ToStdString() == data->LstMatch[index].id){
+	for (int index = 0; index < data->LstMatch.size(); index++)
+	{
+		if (InputIDText->GetValue().ToStdString() == data->LstMatch[index].id)
+		{
 			// Check if the client is admin
-			if(client->isAdminAccount()){
+			if (client->isAdminAccount())
+			{
 				// Show the corresponding detail frame
-				DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[index],this);
+				DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[index], this);
 				dframe->Show();
 			}
-			else {
+			else
+			{
 				// Show the corresponding detail frame
-				DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[index],this);
+				DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[index], this);
 				dframe->Show();
 			}
 			isValidID = true;
 		}
 	}
 
-	if(!isValidID){
+	if (!isValidID)
+	{
 		wxMessageBox("Invalid ID, please try again", wxT("Message"),
-                 wxOK | wxICON_INFORMATION, this);
+					 wxOK | wxICON_INFORMATION, this);
 		event.Skip();
 	}
 }
 void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 {
 	cout << "Row clicked: " << event.GetRow() << endl;
-	// Check if the client is admin
-	if (client->isAdminAccount())
+	// check row clicked is valid
+	if (event.GetRow() < data->LstMatch.size())
 	{
-		DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[event.GetRow()],this);
-		dframe->Show();
+		// Check if the client is admin
+		if (client->isAdminAccount())
+		{
+			DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[event.GetRow()], this);
+			dframe->Show();
+		}
+		else
+		{
+			DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[event.GetRow()], this);
+			dframe->Show();
+		}
 	}
-	else
-	{
-		DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[event.GetRow()],this);
-		dframe->Show();
+	else {
+		event.Skip();
 	}
 }
 
-void MainFrame::OnReceiveList(wxThreadEvent &event) {
+void MainFrame::OnReceiveList(wxThreadEvent &event)
+{
 	cout << "Event triggered" << endl;
 	client->extractMatches(data);
 	// for (auto match : data->LstMatch) {
@@ -233,8 +245,9 @@ void MainFrame::OnReceiveList(wxThreadEvent &event) {
 
 void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 {
-	if(data->LstMatch.size()>LIST_MATCH->GetNumberRows()){
-		LIST_MATCH->AppendRows(data->LstMatch.size()-LIST_MATCH->GetNumberRows());
+	if (data->LstMatch.size() > LIST_MATCH->GetNumberRows())
+	{
+		LIST_MATCH->AppendRows(data->LstMatch.size() - LIST_MATCH->GetNumberRows());
 	}
 	LIST_MATCH->ClearGrid();
 	for (int index = 0; index < data->LstMatch.size(); index++)
@@ -247,17 +260,20 @@ void MainFrame::DisplayData(/*vector<MatchInfo> data->LstMatch*/)
 	}
 }
 
-void MainFrame::OnSocketClosed(wxThreadEvent &event) {
+void MainFrame::OnSocketClosed(wxThreadEvent &event)
+{
 	displayNotif("Connection to the server has been closed. Please try again.");
 	client->account.username.clear();
 	client->account.isAdmin = false;
-	LoginFrame* lframe = new LoginFrame(client, NULL, wxID_ANY, _("Live Score"), wxPoint(550, 250), wxSize(500, 300));
+	LoginFrame *lframe = new LoginFrame(client, NULL, wxID_ANY, _("Live Score"), wxPoint(550, 250), wxSize(500, 300));
 	this->Close();
 	lframe->Show();
 }
 
-void MainFrame::OnTimedRefresh() {
-	if(client->getMsg() == '\0'){
+void MainFrame::OnTimedRefresh()
+{
+	if (client->getMsg() == '\0')
+	{
 		client->requestMatches();
 	}
 }
