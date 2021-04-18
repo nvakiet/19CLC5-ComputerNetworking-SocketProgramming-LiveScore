@@ -176,9 +176,34 @@ void MainFrame::OnRefreshClick(wxCommandEvent &event)
 }
 void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
 {
+	bool isValidID = false;
+	// check data is null
+	if(data == nullptr){
+		return;
+	}
 	// Check if the ID is valid
-	// Check if the client is admin
-	// Show the corresponding detail frame
+	for(int index =0; index < data->LstMatch.size(); index++ ){
+		if(InputIDText->GetValue().ToStdString() == data->LstMatch[index].id){
+			// Check if the client is admin
+			if(client->isAdminAccount()){
+				// Show the corresponding detail frame
+				DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[index],this);
+				dframe->Show();
+			}
+			else {
+				// Show the corresponding detail frame
+				DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[index],this);
+				dframe->Show();
+			}
+			isValidID = true;
+		}
+	}
+
+	if(!isValidID){
+		wxMessageBox("Invalid ID, please try again", wxT("Message"),
+                 wxOK | wxICON_INFORMATION, this);
+		event.Skip();
+	}
 }
 void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 {
@@ -186,12 +211,12 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 	// Check if the client is admin
 	if (client->isAdminAccount())
 	{
-		DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(this);
+		DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[event.GetRow()],this);
 		dframe->Show();
 	}
 	else
 	{
-		DetailFrame_ForClient *dframe = new DetailFrame_ForClient(this);
+		DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[event.GetRow()],this);
 		dframe->Show();
 	}
 }

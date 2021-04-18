@@ -2,10 +2,10 @@
 
 #include "GUI.h"
 
-DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
+DetailFrame_ForAdmin::DetailFrame_ForAdmin(MatchInfo *match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
 	//FOR DEBUG ONLY:
-    //initialize data;
+	//initialize data;
 	data = new MatchDetails();
 
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
@@ -63,66 +63,76 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 
 	BodyBox->Add(ButtonBox, 1, wxEXPAND, 5);
 
-	wxBoxSizer *Group_DateBox;
-	Group_DateBox = new wxBoxSizer(wxHORIZONTAL);
+	// wxBoxSizer *Group_DateBox;
+	// Group_DateBox = new wxBoxSizer(wxHORIZONTAL);
 
-	wxBoxSizer *GroupNameBox;
-	GroupNameBox = new wxBoxSizer(wxVERTICAL);
+	// wxBoxSizer *GroupNameBox;
+	// GroupNameBox = new wxBoxSizer(wxVERTICAL);
 
-	GroupNameLabel = new wxStaticText(this, wxID_ANY, wxT("GROUP NAME"), wxDefaultPosition, wxDefaultSize, 0);
-	GroupNameLabel->Wrap(-1);
-	GroupNameLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+	// GroupNameLabel = new wxStaticText(this, wxID_ANY, wxT("GROUP NAME"), wxDefaultPosition, wxDefaultSize, 0);
+	// GroupNameLabel->Wrap(-1);
+	// GroupNameLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	GroupNameBox->Add(GroupNameLabel, 0, wxALL, 5);
+	// GroupNameBox->Add(GroupNameLabel, 0, wxALL, 5);
 
-	Group_DateBox->Add(GroupNameBox, 1, wxEXPAND, 5);
+	// Group_DateBox->Add(GroupNameBox, 1, wxEXPAND, 5);
 
-	wxBoxSizer *StartDateBox;
-	StartDateBox = new wxBoxSizer(wxVERTICAL);
+	// wxBoxSizer *StartDateBox;
+	// StartDateBox = new wxBoxSizer(wxVERTICAL);
+	// wxString wxDate(match->timeMatch.c_str(), wxConvUTF8);
+	// StartDateLabel = new wxStaticText(this, wxID_ANY, wxDate, wxDefaultPosition, wxDefaultSize, 0);
+	// StartDateLabel->Wrap(-1);
+	// StartDateLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	StartDateLabel = new wxStaticText(this, wxID_ANY, wxT("START DATE"), wxDefaultPosition, wxDefaultSize, 0);
-	StartDateLabel->Wrap(-1);
-	StartDateLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+	// StartDateBox->Add(StartDateLabel, 0, wxALIGN_CENTER | wxALL, 5);
 
-	StartDateBox->Add(StartDateLabel, 0, wxALIGN_RIGHT | wxALL, 5);
+	// Group_DateBox->Add(StartDateBox, 1, 0, 5);
 
-	Group_DateBox->Add(StartDateBox, 1, 0, 5);
-
-	BodyBox->Add(Group_DateBox, 1, wxEXPAND, 5);
+	// BodyBox->Add(Group_DateBox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *NameMatchBox;
 	NameMatchBox = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer *TimeBox;
+	TimeBox = new wxBoxSizer(wxVERTICAL);
+	wxString wxDate(match->timeMatch.c_str(), wxConvUTF8);
+	TIME_LABEL = new wxStaticText(this, wxID_ANY, wxDate, wxDefaultPosition, wxDefaultSize, 0);
+	TIME_LABEL->Wrap(-1);
+	TIME_LABEL->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
+	TimeBox->Add(TIME_LABEL, 0, wxALL, 5);
+
+	NameMatchBox->Add(TimeBox, 1, wxEXPAND, 5);
 	wxBoxSizer *TeamABox;
 	TeamABox = new wxBoxSizer(wxVERTICAL);
-
-	TeamALabel = new wxStaticText(this, wxID_ANY, wxT("TEAM_A"), wxDefaultPosition, wxDefaultSize, 0);
+	wxString wxTeamA(match->teamA.c_str(), wxConvUTF8);
+	TeamALabel = new wxStaticText(this, wxID_ANY, wxTeamA, wxDefaultPosition, wxDefaultSize, 0);
 	TeamALabel->Wrap(-1);
 	TeamALabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	TeamABox->Add(TeamALabel, 0, wxALIGN_CENTER | wxALL, 5);
+	TeamABox->Add(TeamALabel, 0, wxALL, 5);
 
 	NameMatchBox->Add(TeamABox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *ScoreBox;
 	ScoreBox = new wxBoxSizer(wxVERTICAL);
-
-	ScoreLabel = new wxStaticText(this, wxID_ANY, wxT("SCORE"), wxDefaultPosition, wxDefaultSize, 0);
+	string score = to_string(match->scoreA) + " - " + to_string(match->scoreB);
+	wxString wxScore(score.c_str(), wxConvUTF8);
+	ScoreLabel = new wxStaticText(this, wxID_ANY, wxScore, wxDefaultPosition, wxDefaultSize, 0);
 	ScoreLabel->Wrap(-1);
 	ScoreLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	ScoreBox->Add(ScoreLabel, 0, wxALIGN_CENTER | wxALL, 5);
+	ScoreBox->Add(ScoreLabel, 0, wxALL, 5);
 
 	NameMatchBox->Add(ScoreBox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *TeamBBox;
 	TeamBBox = new wxBoxSizer(wxVERTICAL);
-
-	TeamBLabel = new wxStaticText(this, wxID_ANY, wxT("TEAM_B"), wxDefaultPosition, wxDefaultSize, 0);
+	wxString wxTeamB(match->teamB.c_str(), wxConvUTF8);
+	TeamBLabel = new wxStaticText(this, wxID_ANY, wxTeamB, wxDefaultPosition, wxDefaultSize, 0);
 	TeamBLabel->Wrap(-1);
 	TeamBLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	TeamBBox->Add(TeamBLabel, 0, wxALIGN_CENTER | wxALL, 5);
+	TeamBBox->Add(TeamBLabel, 0, wxALL, 5);
 
 	NameMatchBox->Add(TeamBBox, 1, wxEXPAND, 5);
 
@@ -173,7 +183,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	this->SetSizer(mainBox);
 	this->Layout();
 	mainBox->Fit(this);
-	
+
 	this->Centre(wxBOTH);
 
 	// Connect Events
@@ -182,23 +192,26 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(wxWindow *parent, wxWindowID id, cons
 	UPDATEBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
 }
-void DetailFrame_ForAdmin::DisplayData(){
-	if(data->listEvent.size()>DETAILS_MATCH_TABLE->GetNumberRows()){
-		DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size()-DETAILS_MATCH_TABLE->GetNumberRows());
-	}
-		DETAILS_MATCH_TABLE->ClearGrid();
-    for (int index = 0; index < data->listEvent.size(); index++)
+void DetailFrame_ForAdmin::DisplayData()
+{
+	if (data->listEvent.size() > DETAILS_MATCH_TABLE->GetNumberRows())
 	{
-		DETAILS_MATCH_TABLE->SetCellValue(index,0,data->listEvent[index].timeline);
-        DETAILS_MATCH_TABLE->SetCellValue(index,1,data->listEvent[index].namePlayerTeamA);
-        if(data->listEvent[index].isGoal){
-            DETAILS_MATCH_TABLE->SetCellValue(index,2,to_string(data->listEvent[index].scoreA) + " - " + to_string(data->listEvent[index].scoreB));
-        }
-        else 
-        {
-            DETAILS_MATCH_TABLE->SetCellValue(index,2,data->listEvent[index].card);
-        }
-        DETAILS_MATCH_TABLE->SetCellValue(index,3,data->listEvent[index].namePlayerTeamB);
+		DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size() - DETAILS_MATCH_TABLE->GetNumberRows());
+	}
+	DETAILS_MATCH_TABLE->ClearGrid();
+	for (int index = 0; index < data->listEvent.size(); index++)
+	{
+		DETAILS_MATCH_TABLE->SetCellValue(index, 0, data->listEvent[index].timeline);
+		DETAILS_MATCH_TABLE->SetCellValue(index, 1, data->listEvent[index].namePlayerTeamA);
+		if (data->listEvent[index].isGoal)
+		{
+			DETAILS_MATCH_TABLE->SetCellValue(index, 2, to_string(data->listEvent[index].scoreA) + " - " + to_string(data->listEvent[index].scoreB));
+		}
+		else
+		{
+			DETAILS_MATCH_TABLE->SetCellValue(index, 2, data->listEvent[index].card);
+		}
+		DETAILS_MATCH_TABLE->SetCellValue(index, 3, data->listEvent[index].namePlayerTeamB);
 	}
 }
 DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
@@ -213,6 +226,7 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 	delete AddBUTTON;
 	delete UPDATEBUTTON;
 	delete DELETEBUTON;
+	delete TIME_LABEL;
 	delete TeamALabel;
 	delete ScoreLabel;
 	delete TeamBLabel;
