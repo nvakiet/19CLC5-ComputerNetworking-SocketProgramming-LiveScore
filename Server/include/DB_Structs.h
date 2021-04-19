@@ -58,9 +58,8 @@ struct Event
 };
 struct MatchDetails
 {
-    string nameGroup;
+    //string nameGroup;
     //string startDate;
-    MatchInfo *match;
     vector<Event> listEvent;
     //FOR DEBUG ONLY:
     //MatchDetails();

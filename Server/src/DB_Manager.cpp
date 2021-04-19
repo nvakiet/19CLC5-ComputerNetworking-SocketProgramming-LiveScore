@@ -123,15 +123,7 @@ void DB_Manager::queryMatches(ListMatch &list) {
     }
 }
 
-bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
-    //Get match group name
-    string groupname;
-    sql << "select gm.GROUPNAME from MATCH m join GROUP_MATCH gm on m.ID_GROUP = gm.GROUPID where m.ID = :ID", into(groupname), use(ID);
-    if (!sql.got_data()) {
-        cerr << "Match ID " << ID << " doesn't exist." << endl;
-        return false;
-    }
-
+void DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
     vector<Event> cards;
     vector<Event> scores;
 
@@ -149,7 +141,8 @@ bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
         //Get card team A
         if ((*it).get_indicator(3) != i_null) {
             //Get first character of the card: R or Y
-            cards.back().card = (*it).get<string>(3)[0] + " - ";
+            cards.back().card = (*it).get<string>(3)[0];
+            cards.back().card += " - ";
         }
         else {
             cards.back().card = "  - ";
@@ -173,7 +166,7 @@ bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
     }
 
     //Get match scores
-    rowset<row> rs = (sql.prepare << "select * from DETAILS_SCORE dts where dts.IDMATCH = :ID order by dts.MINUTES_SCORE asc, dts.OVERTIME asc", use(ID));
+    rs = (sql.prepare << "select * from DETAILS_SCORE dts where dts.IDMATCH = :ID order by dts.MINUTES_SCORE asc, dts.OVERTIME asc", use(ID));
     for (auto it = rs.begin(); it != rs.end(); ++it) {
         scores.push_back(Event());
         scores.back().isGoal = true;
@@ -208,6 +201,4 @@ bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
     }
     //Construct the match details
     match = MatchDetails(scores, cards);
-    match.nameGroup = groupname;
-    return true;
 }
