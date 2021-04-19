@@ -2,12 +2,12 @@
 
 #include "GUI.h"
 
-DetailFrame_ForAdmin::DetailFrame_ForAdmin(MatchInfo *match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
+DetailFrame_ForAdmin::DetailFrame_ForAdmin(MatchInfo match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
 {
 	//FOR DEBUG ONLY:
 	//initialize data;
 	data = new MatchDetails();
-
+	data->match = &match;
 	this->SetSizeHints(wxDefaultSize, wxDefaultSize);
 	this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
 
@@ -79,7 +79,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(MatchInfo *match, wxWindow *parent, w
 
 	// wxBoxSizer *StartDateBox;
 	// StartDateBox = new wxBoxSizer(wxVERTICAL);
-	// wxString wxDate(match->timeMatch.c_str(), wxConvUTF8);
+	// wxString wxDate(match.timeMatch.c_str(), wxConvUTF8);
 	// StartDateLabel = new wxStaticText(this, wxID_ANY, wxDate, wxDefaultPosition, wxDefaultSize, 0);
 	// StartDateLabel->Wrap(-1);
 	// StartDateLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
@@ -92,47 +92,38 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(MatchInfo *match, wxWindow *parent, w
 
 	wxBoxSizer *NameMatchBox;
 	NameMatchBox = new wxBoxSizer(wxHORIZONTAL);
-	wxBoxSizer *TimeBox;
-	TimeBox = new wxBoxSizer(wxVERTICAL);
-	wxString wxDate(match->timeMatch.c_str(), wxConvUTF8);
-	TIME_LABEL = new wxStaticText(this, wxID_ANY, wxDate, wxDefaultPosition, wxDefaultSize, 0);
-	TIME_LABEL->Wrap(-1);
-	TIME_LABEL->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
-
-	TimeBox->Add(TIME_LABEL, 0, wxALL, 5);
-
-	NameMatchBox->Add(TimeBox, 1, wxEXPAND, 5);
+	
 	wxBoxSizer *TeamABox;
 	TeamABox = new wxBoxSizer(wxVERTICAL);
-	wxString wxTeamA(match->teamA.c_str(), wxConvUTF8);
+	wxString wxTeamA(match.teamA.c_str(), wxConvUTF8);
 	TeamALabel = new wxStaticText(this, wxID_ANY, wxTeamA, wxDefaultPosition, wxDefaultSize, 0);
 	TeamALabel->Wrap(-1);
 	TeamALabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	TeamABox->Add(TeamALabel, 0, wxALL, 5);
+	TeamABox->Add(TeamALabel, 0, wxALIGN_CENTER|wxALL, 5);
 
 	NameMatchBox->Add(TeamABox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *ScoreBox;
 	ScoreBox = new wxBoxSizer(wxVERTICAL);
-	string score = to_string(match->scoreA) + " - " + to_string(match->scoreB);
+	string score = to_string(match.scoreA) + " - " + to_string(match.scoreB);
 	wxString wxScore(score.c_str(), wxConvUTF8);
 	ScoreLabel = new wxStaticText(this, wxID_ANY, wxScore, wxDefaultPosition, wxDefaultSize, 0);
 	ScoreLabel->Wrap(-1);
 	ScoreLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	ScoreBox->Add(ScoreLabel, 0, wxALL, 5);
+	ScoreBox->Add(ScoreLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
 	NameMatchBox->Add(ScoreBox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *TeamBBox;
 	TeamBBox = new wxBoxSizer(wxVERTICAL);
-	wxString wxTeamB(match->teamB.c_str(), wxConvUTF8);
+	wxString wxTeamB(match.teamB.c_str(), wxConvUTF8);
 	TeamBLabel = new wxStaticText(this, wxID_ANY, wxTeamB, wxDefaultPosition, wxDefaultSize, 0);
 	TeamBLabel->Wrap(-1);
 	TeamBLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
 
-	TeamBBox->Add(TeamBLabel, 0, wxALL, 5);
+	TeamBBox->Add(TeamBLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
 	NameMatchBox->Add(TeamBBox, 1, wxEXPAND, 5);
 
@@ -226,7 +217,6 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 	delete AddBUTTON;
 	delete UPDATEBUTTON;
 	delete DELETEBUTON;
-	delete TIME_LABEL;
 	delete TeamALabel;
 	delete ScoreLabel;
 	delete TeamBLabel;

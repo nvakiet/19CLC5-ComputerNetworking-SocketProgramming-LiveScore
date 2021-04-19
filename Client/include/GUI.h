@@ -89,7 +89,6 @@ class DetailFrame_ForAdmin : public wxFrame
 		wxButton* AddBUTTON;
 		wxButton* UPDATEBUTTON;
 		wxButton* DELETEBUTON;
-		wxStaticText* TIME_LABEL;
 		//wxStaticText* GroupNameLabel;
 		//wxStaticText* StartDateLabel;
 		wxStaticText* TeamALabel;
@@ -105,7 +104,7 @@ class DetailFrame_ForAdmin : public wxFrame
 		virtual void DisplayData();
 	public:
 		
-		DetailFrame_ForAdmin(MatchInfo*,wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
+		DetailFrame_ForAdmin(MatchInfo,wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
 		
 		~DetailFrame_ForAdmin();
 	
@@ -119,7 +118,6 @@ class DetailFrame_ForClient : public wxFrame
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
-		wxStaticText* TIME_LABEL;
 		//wxStaticText* GroupNameLabel;
 		//wxStaticText* StartDateLabel;
 		wxStaticText* TeamALabel;
@@ -133,7 +131,7 @@ class DetailFrame_ForClient : public wxFrame
 	
 	public:
 		
-		DetailFrame_ForClient(MatchInfo*, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxALWAYS_SHOW_SB );
+		DetailFrame_ForClient(MatchInfo, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxALWAYS_SHOW_SB );
 		
 		~DetailFrame_ForClient();
 	

@@ -83,10 +83,11 @@
 
 
 //TEST DB_MANAGER
-#include "DB_Manager.h"
+ #include "DB_Manager.h"
 
 int main() {
-   DB_Manager db("DRIVER=ODBC Driver 17 for SQL Server;SERVER=localhost;DATABASE=DB_LIVESCORE;Trusted_Connection=Yes");
+   //DRIVER=ODBC Driver 17 for SQL Server;SERVER=localhost;DATABASE=DB_LIVESCORE;Trusted_Connection=Yes
+   DB_Manager db("");
    MatchDetails detail;
    db.queryMatchDetail("AL", detail);
    cout << detail.nameGroup << endl;

@@ -189,13 +189,13 @@ void MainFrame::OnSearchByIDClick(wxCommandEvent &event)
 			if (client->isAdminAccount())
 			{
 				// Show the corresponding detail frame
-				DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[index], this);
+				DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(data->LstMatch[index], this);
 				dframe->Show();
 			}
 			else
 			{
 				// Show the corresponding detail frame
-				DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[index], this);
+				DetailFrame_ForClient *dframe = new DetailFrame_ForClient(data->LstMatch[index], this);
 				dframe->Show();
 			}
 			isValidID = true;
@@ -218,12 +218,12 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 		// Check if the client is admin
 		if (client->isAdminAccount())
 		{
-			DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(&data->LstMatch[event.GetRow()], this);
+			DetailFrame_ForAdmin *dframe = new DetailFrame_ForAdmin(data->LstMatch[event.GetRow()], this);
 			dframe->Show();
 		}
 		else
 		{
-			DetailFrame_ForClient *dframe = new DetailFrame_ForClient(&data->LstMatch[event.GetRow()], this);
+			DetailFrame_ForClient *dframe = new DetailFrame_ForClient(data->LstMatch[event.GetRow()], this);
 			dframe->Show();
 		}
 	}
