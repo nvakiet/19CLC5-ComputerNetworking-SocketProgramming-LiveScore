@@ -472,16 +472,16 @@ bool Server::handleFeedback(int iSock) {
             if (match.listEvent.size() != 0) {
                 vector<char> temp;
                 match.toByteStream(temp);
-                MatchDetails testing(temp);
-                for (auto it = testing.listEvent.begin(); it != testing.listEvent.end(); ++it) {
-                    cout << (*it).timeline << ' ' << (*it).namePlayerTeamA << ' ';
-                    if ((*it).isGoal) {
-                        cout << (*it).scoreA << " - " << (*it).scoreB << ' ' << (*it).namePlayerTeamB << endl;
-                    }
-                    else {
-                        cout << (*it).card << ' ' << (*it).namePlayerTeamB << endl;
-                    }
-                }
+                // MatchDetails testing(temp);
+                // for (auto it = testing.listEvent.begin(); it != testing.listEvent.end(); ++it) {
+                //     cout << (*it).timeline << ' ' << (*it).namePlayerTeamA << ' ';
+                //     if ((*it).isGoal) {
+                //         cout << (*it).scoreA << " - " << (*it).scoreB << ' ' << (*it).namePlayerTeamB << endl;
+                //     }
+                //     else {
+                //         cout << (*it).card << ' ' << (*it).namePlayerTeamB << endl;
+                //     }
+                // }
                 byteSize = temp.size();
                 sendData(iSock, (char *)&len, sizeof(size_t));
                 sendData(iSock, &ID[0], len);

@@ -153,6 +153,9 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     Bind<>(DETAIL_RECV, OnRecvDetails, this);
     //Send the request for details and start the timer
 	client->requestDetails(mInfo.id);
+    timer = new DetailRefreshTimer;
+    timer->Init(client, mInfo.id);
+	timer->Start(30000);
 }
 
 void DetailFrame_ForClient::DisplayData()
@@ -200,7 +203,8 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 void DetailFrame_ForClient::OnRecvDetails(wxThreadEvent &event) {
 	if (event.GetString() == mInfo.id) {
 		if (event.GetExtraLong() > 0) {
-			client->extractDetails(mInfo.id, data);
+            timer->Start(30000);
+            client->extractDetails(mInfo.id, data);
 			DisplayData();
 		}
 		client->setMsg('\0');

@@ -14,6 +14,10 @@ struct User
     bool isAdmin;
 };
 
+void setBuffer(char *newBuf, size_t newLen, vector<char> &buf);
+void appendBuffer(char *data, size_t len, vector<char> &buf);
+bool extractBuffer(char *extBuf, size_t extLen, vector<char> &buf);
+
 struct MatchInfo
 {
 public:
@@ -30,7 +34,6 @@ public:
     void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
-
 struct ListMatch
 {
     vector<MatchInfo> LstMatch;
@@ -43,13 +46,13 @@ struct ListMatch
 };
 struct Event
 {
-    string timeline;
-    string namePlayerTeamA;
-    string namePlayerTeamB;
-    unsigned int scoreA;
-    unsigned int scoreB;
-    string card;
-    bool isGoal;
+    string timeline = "-";
+    string namePlayerTeamA = "-";
+    string namePlayerTeamB = "-";
+    unsigned int scoreA = 0;
+    unsigned int scoreB = 0;
+    string card = "-";
+    bool isGoal = true;
     //FOR DEBUG ONLY:
     //Event();
     //Event(const char*);
@@ -62,6 +65,7 @@ struct MatchDetails
 {
     //string nameGroup;
     //string startDate;
+    //MatchInfo *match;
     vector<Event> listEvent;
     //FOR DEBUG ONLY:
     //MatchDetails();
@@ -70,5 +74,14 @@ struct MatchDetails
     MatchDetails(const vector<Event> &scores, const vector<Event> &cards);
     void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
+};
+
+typedef vector<char> buftype;
+
+//This struct is for thread communication between sockhandling thread and main thread
+//USED FOR EXTRACTING DETAIL INFORMATIONS FOR EACH DETAIL FRAME
+struct DetailQueue {
+    vector<string> IDs;
+    vector<buftype> buffers;
 };
 #endif

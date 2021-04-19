@@ -46,13 +46,13 @@ struct ListMatch
 };
 struct Event
 {
-    string timeline;
-    string namePlayerTeamA;
-    string namePlayerTeamB;
-    unsigned int scoreA;
-    unsigned int scoreB;
-    string card;
-    bool isGoal;
+    string timeline = "-";
+    string namePlayerTeamA = "-";
+    string namePlayerTeamB = "-";
+    unsigned int scoreA = 0;
+    unsigned int scoreB = 0;
+    string card = "-";
+    bool isGoal = true;
     //FOR DEBUG ONLY:
     //Event();
     //Event(const char*);

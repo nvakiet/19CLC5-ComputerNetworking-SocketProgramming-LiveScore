@@ -47,6 +47,7 @@ class LoginFrame : public wxFrame
 };
 
 class MainRefreshTimer;
+class DetailRefreshTimer;
 
 class MainFrame : public wxFrame 
 {
@@ -84,6 +85,7 @@ class DetailFrame_ForAdmin : public wxFrame
 		MatchDetails data;
 		MatchInfo mInfo;
 		Client *client;
+		DetailRefreshTimer *timer;
 
 	protected:
 		wxStaticText* TITLE;
@@ -119,7 +121,7 @@ class DetailFrame_ForClient : public wxFrame
 		MatchDetails data;
 		MatchInfo mInfo;
 		Client *client;
-
+		DetailRefreshTimer* timer;
 	protected:
 		wxStaticText* TITLE;
 		wxButton* REFRESH_BUTTON;
@@ -178,6 +180,14 @@ class MainRefreshTimer : public wxTimer {
         void Notify();
 };
 
+class DetailRefreshTimer : public wxTimer {
+	protected:
+		Client *client;
+		string ID;
+	public:
+		void Init(Client *ptr_client, const string &matchID);
+		void Notify();
+};
 
 #endif
 

@@ -132,6 +132,7 @@ void MyApp::socketHandling() {
                                 frame->GetEventHandler()->QueueEvent(e.Clone());
                             }
                         }
+                        client->setMsg(Client::Details);
                         break;
                     }
                     default:

@@ -185,6 +185,9 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	Bind<>(DETAIL_RECV, OnRecvDetails, this);
 	//Send the request for details and start the timer
 	client->requestDetails(mInfo.id);
+	timer = new DetailRefreshTimer;
+	timer->Init(client, mInfo.id);
+	timer->Start(30000);
 }
 
 
@@ -239,6 +242,7 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 void DetailFrame_ForAdmin::OnRecvDetails(wxThreadEvent &event) {
 	if (event.GetString() == mInfo.id) {
 		if (event.GetExtraLong() > 0) {
+			timer->Start(30000);
 			client->extractDetails(mInfo.id, data);
 			DisplayData();
 		}
