@@ -13,6 +13,11 @@ struct User
     string username;
     bool isAdmin;
 };
+
+void setBuffer(char *newBuf, size_t newLen, vector<char> &buf);
+void appendBuffer(char *data, size_t len, vector<char> &buf);
+bool extractBuffer(char *extBuf, size_t extLen, vector<char> &buf);
+
 struct MatchInfo
 {
 public:
@@ -69,5 +74,14 @@ struct MatchDetails
     MatchDetails(const vector<Event> &scores, const vector<Event> &cards);
     void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
+};
+
+typedef vector<char> buftype;
+
+//This struct is for thread communication between sockhandling thread and main thread
+//USED FOR EXTRACTING DETAIL INFORMATIONS FOR EACH DETAIL FRAME
+struct DetailQueue {
+    vector<string> IDs;
+    vector<buftype> buffers;
 };
 #endif

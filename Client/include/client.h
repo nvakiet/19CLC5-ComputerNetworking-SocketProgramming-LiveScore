@@ -32,8 +32,9 @@ public:
     User account;
     int result;
     size_t extractSize;
+    DetailQueue detailQ;
     //List of all messages the server can handle from clients
-    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3'};
+    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3', Details = '4'};
     //Start winsock
     Client();
     //Log out the account, close socket and clean up winsock, connection infos
@@ -70,6 +71,10 @@ public:
     void setMsg(char c);
     // Get the recorded message
     char getMsg();
+    //Request an event detail list of a match from the server
+    bool requestDetails(const string& ID);
+    //Extract the details from the buffer
+    void extractDetails(const string& ID, MatchDetails *&details);
 };
 
 #endif
