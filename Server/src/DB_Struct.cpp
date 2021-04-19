@@ -250,7 +250,7 @@ MatchDetails::MatchDetails(vector<char> response)
     extractBuffer((char *)&numEvent, sizeof(size_t), response);
     size_t expectedSize = 0;
 
-    for(int index = 0; index < numEvent ; index++)
+    for (int index = 0; index < numEvent; index++)
     {
         extractBuffer((char *)&expectedSize, sizeof(size_t), response);
         vector<char> cache;
@@ -291,5 +291,43 @@ void MatchDetails::toByteStream(vector<char> &result)
         size_t sizeCache = cache.size();
         appendBuffer((char *)&sizeCache, sizeof(size_t), result);
         appendBuffer((char *)&cache[0], sizeCache, result);
+    }
+}
+
+MatchDetails::MatchDetails(const vector<Event> &scores, const vector<Event> &cards)
+{
+    int index_score = 0;
+    int index_card = 0;
+    while (index_score < scores.size() && index_card < cards.size())
+    {
+        if (scores[index_score].timeline <= cards[index_card].timeline)
+        {
+            listEvent.push_back(scores[index_score]);
+            index_score++;
+        }
+        else
+        {
+            listEvent.push_back(cards[index_card]);
+            index_card++;
+        }
+    }
+    if (!(index_card == cards.size() && index_score == scores.size()))
+    {
+        if (index_card == cards.size())
+        {
+            while (index_score < scores.size())
+            {
+                listEvent.push_back(scores[index_score]);
+                index_score++;
+            }
+        }
+        else
+        {
+            while (index_card < cards.size())
+            {
+                listEvent.push_back(scores[index_card]);
+                index_card++;
+            }
+        }
     }
 }

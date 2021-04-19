@@ -136,8 +136,8 @@ bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
     vector<Event> scores;
 
     //Get the card info of the match
-    rowset<row> rs = (sql.prepare << "select * from DETAILS_CARD dtc where dtc.IDMATCH = :ID order by dtc.MINUTES_CARD asc, dtc.OVERTIME asc", use(ID));
-    for (auto it = rs.begin(); it != rs.end(); ++it) {
+    rowset<row> rs_card = (sql.prepare << "select * from DETAILS_CARD dtc where dtc.IDMATCH = :ID order by dtc.MINUTES_CARD asc, dtc.OVERTIME asc", use(ID));
+    for (auto it = rs_card.begin(); it != rs_card.end(); ++it) {
         cards.push_back(Event());
         cards.back().isGoal = false;
         int minute = (*it).get<int>(1);
@@ -173,8 +173,8 @@ bool DB_Manager::queryMatchDetail(const string &ID, MatchDetails& match) {
     }
 
     //Get match scores
-    rowset<row> rs = (sql.prepare << "select * from DETAILS_SCORE dts where dts.IDMATCH = :ID order by dts.MINUTES_SCORE asc, dts.OVERTIME asc", use(ID));
-    for (auto it = rs.begin(); it != rs.end(); ++it) {
+    rowset<row> rs_score = (sql.prepare << "select * from DETAILS_SCORE dts where dts.IDMATCH = :ID order by dts.MINUTES_SCORE asc, dts.OVERTIME asc", use(ID));
+    for (auto it = rs_score.begin(); it != rs_score.end(); ++it) {
         scores.push_back(Event());
         scores.back().isGoal = true;
         int minute = (*it).get<int>(1);
