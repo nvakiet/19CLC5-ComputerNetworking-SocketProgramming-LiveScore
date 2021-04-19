@@ -8,6 +8,8 @@ Client::Client() {
     conInfo = nullptr;
     connector = nullptr;
     handler = WSA_INVALID_EVENT;
+    result = -100;
+    extractSize = 0;
 }
 
 Client::~Client() {
@@ -87,6 +89,11 @@ bool Client::pollNetworkEvents() {
     if (connector == nullptr || connector->socket == INVALID_SOCKET || handler == WSA_INVALID_EVENT)
         return false;
     int rc = 0;
+    // rc = WSAEventSelect(connector->socket, handler, FD_READ | FD_WRITE | FD_CLOSE);
+    // if (rc == SOCKET_ERROR) {
+    //     cerr << "WSAEventSelect() failed, error " << WSAGetLastError() << endl;
+    //     return false;
+    // }
     rc = WSAEnumNetworkEvents(connector->socket, handler, &netEvent);
     if (rc == SOCKET_ERROR) {
         cerr << "Can't enumerate network events, error " << WSAGetLastError() << endl;
@@ -107,79 +114,87 @@ int Client::canRecv() {
 }
 
 
-int Client::recvData(char *buf, size_t dataSize) {
+void Client::recvData(char *buf, size_t dataSize, bool isContinuous) {
     //Set the buffer for receiving
     if (dataSize == 0) {
         cerr << "Can't receive data size 0." << endl;
-        return -1;
+        return;
     }
     DWORD flag = 0;
     DWORD bRecv = 0;
+    if (isContinuous) {
+        connector->byteRecv = 0;
+    }
     if (buf == nullptr) {
-        if (!connector->buf.empty())
+        if (connector->buf.empty()) {
+            connector->buf.reserve(2 * dataSize);
+            connector->buf.resize(dataSize);
+            connector->dataBuf.buf = &(connector->buf[0]);
+            connector->dataBuf.len = dataSize;
+        }
+        else {
             connector->appendBuffer(nullptr, dataSize);
-        else
-            connector->setBuffer(nullptr, dataSize);
+        }
     }
     else {
         connector->dataBuf.buf = buf;
         connector->dataBuf.len = dataSize;
     }
     //Receive data into socket buffer
-    int rc = WSARecv(connector->socket, &connector->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK) {
-            cerr << "Something went wrong while receiving data from server, error " << WSAGetLastError() << endl;
-            closeConnection();
-            return -1;
+    do {
+        int rc = WSARecv(connector->socket, &connector->dataBuf, 1, &bRecv, &flag, nullptr, nullptr);
+        if (rc == SOCKET_ERROR) {
+            if (WSAGetLastError() != WSAEWOULDBLOCK) {
+                //cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+                throw NetworkException("Something went wrong while receiving data from client, error ", WSAGetLastError());
+            }
+            else { //If WSAEWOULDBLOCK, wait for a while then try again
+                Sleep(100);
+                continue;
+            }
         }
-        else //If WSAEWOULDBLOCK, wait for FD_READ event to call this function again
-            return 0;
-    }
-    connector->byteRecv += bRecv;
-    return 1;
+        connector->byteRecv += bRecv;
+        connector->dataBuf.buf += bRecv;
+        connector->dataBuf.len -= bRecv;
+    } while (isContinuous && connector->byteRecv < dataSize);
 }
 
-int Client::canSend() {
-    if (!(netEvent.lNetworkEvents & FD_WRITE))
-        return 0;
-    if (netEvent.iErrorCode[FD_WRITE_BIT] != 0) {
-        cerr << "FD_WRITE failed, error " << netEvent.iErrorCode[FD_WRITE_BIT] << endl;
-        return -1;
-    }
-    return 1;
-}
-
-int Client::sendData(char *buf, size_t dataSize) {
+void Client::sendData(char *buf, size_t dataSize, bool isContinuous) {
     //Set the buffer containing data to send
     if (dataSize == 0) {
         cerr << "Can't send data size 0." << endl;
-        return -1;
+        return;
     }
     DWORD bSend = 0;
+    if (isContinuous) {
+        connector->byteSend = 0;
+    }
     if (buf != nullptr) {
-        connector->dataBuf.buf = buf;
-        connector->dataBuf.len = dataSize;
+        connector->setBuffer(buf, dataSize);
     }
     else {
         connector->dataBuf.buf = &connector->buf[0];
         connector->dataBuf.len = dataSize;
     }
-    int rc = WSASend(connector->socket, &connector->dataBuf, 1, &bSend, 0, nullptr, nullptr);
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK) {
-            cerr << "Something went wrong while sending data to client, error " << WSAGetLastError() << endl;
-            closeConnection();
-            return -1;
+    do {
+        int rc = WSASend(connector->socket, &connector->dataBuf, 1, &bSend, 0, nullptr, nullptr);
+        if (rc == SOCKET_ERROR) {
+            if (WSAGetLastError() != WSAEWOULDBLOCK) {
+                //cerr << "Something went wrong while receiving data from client, error " << WSAGetLastError() << endl;
+                throw NetworkException("Something went wrong while sending data to client, error ", WSAGetLastError());
+            }
+            else { //If WSAEWOULDBLOCK, wait for a while to call this function again
+                Sleep(100);
+                continue;
+            }
         }
-        else //If WSAEWOULDBLOCK, wait for FD_WRITE event to call this function again
-            return 0;
-    }
+        connector->byteSend += bSend;
+        connector->dataBuf.buf += bSend;
+        connector->dataBuf.len -= bSend;
+    } while (isContinuous && connector->byteSend < dataSize);
     //Flush the send buffer after finished
-    connector->byteSend += bSend;
-    if (buf == nullptr) 
-        connector->extractBuffer(nullptr, bSend);
-    return true;
+    if (buf != nullptr)
+        connector->extractBuffer(nullptr, dataSize);
 }
 
 bool Client::canClose() {
@@ -191,7 +206,7 @@ bool Client::canClose() {
 }
 
 void Client::closeConnection() {
-    shutdown(connector->socket, SD_BOTH);
+    shutdown(connector->socket, SD_SEND);
     closesocket(connector->socket);
     WSACloseEvent(handler);
     connector->socket = INVALID_SOCKET;
@@ -199,55 +214,89 @@ void Client::closeConnection() {
 }
 
 bool Client::login(const string &username, const string &password, string& notif) {
-    char rCode = '1';
-    DWORD bSend = 0;
-    int step = 0;
-    //Send command
-    step += sendData(&rCode, sizeof(char));
-    //Send username
-    size_t expectedSize = username.size();
-    step += sendData((char *)&expectedSize, sizeof(size_t));
-    step += sendData((char *)username.c_str(), expectedSize);
-    //Send password
-    string encrypted(sha256(password));
-    expectedSize = encrypted.size();
-    step += sendData((char *)&expectedSize, sizeof(size_t));
-    step += sendData((char *)encrypted.c_str(), expectedSize);
-    if (step != 5) {
-        cerr << "Failed to send login info to server" << endl;
+    if (username.empty() || password.empty()) {
+        notif = "Username and password can't be empty. Try again.";
+        connector->lastMsg = '\0';
         return false;
     }
-    //Receive login results from server
-    int check = 0;
-    do {
-        check = canRecv();
-        if (check == 1) {
-            if (result == 0) {
-                //Receive account admin rights
-                //connector->extractBuffer((char*)&(account.isAdmin), sizeof(bool));
-                //PASS THIS COUT TO A NOTICE WINDOW
-                notif = "Login success, welcome " + username;
-                account.username = username;
-                return true;
-            }
-            else if (result == 1) {
-                //PASS THIS COUT TO A NOTICE WINDOW
-                notif = "User " + username + " already logged in";
-                return false;
-            }
-            else if (result == -1) {
-                //PASS THIS COUT TO A NOTICE WINDOW
-                notif = "Wrong username or password. Try again.";
-                return false;
-            }
-        }
-    } while (check != 1 && connector->socket != INVALID_SOCKET);
-    notif = "Unable to retrieve login result. Login Failed!";
-    return false;
+    char rCode = Msg::Login;
+    connector->lastMsg = Msg::Pending;
+    try {
+        //Send command
+        sendData(&rCode, sizeof(char));
+        //Send username
+        size_t expectedSize = username.size();
+        sendData((char *)&expectedSize, sizeof(size_t));
+        sendData((char *)username.c_str(), expectedSize);
+        //Send password
+        string encrypted(sha256(password));
+        expectedSize = encrypted.size();
+        sendData((char *)&expectedSize, sizeof(size_t));
+        sendData((char *)encrypted.c_str(), expectedSize);
+    } catch (const NetworkException& e) {
+        notif = "Failed to send login info to server";
+        return false;
+    }
+    account.username = username;
+    return true;
 }
 
-bool Client::registerAcc(const string &username, const string &password) {
+bool Client::registerAcc(const string &username, const string &password, string& notif) {
+    if (username.empty() || password.empty()) {
+        notif = "Username and password can't be empty. Try again.";
+        connector->lastMsg = '\0';
+        return false;
+    }
+    char rCode = Msg::Register;
+    connector->lastMsg = Msg::Pending;
+    try {
+        //Send command
+        sendData(&rCode, sizeof(char));
+        //Send username
+        size_t expectedSize = username.size();
+        sendData((char *)&expectedSize, sizeof(size_t));
+        sendData((char *)username.c_str(), expectedSize);
+        //Send password
+        string encrypted(sha256(password));
+        expectedSize = encrypted.size();
+        sendData((char *)&expectedSize, sizeof(size_t));
+        sendData((char *)encrypted.c_str(), expectedSize);
+    } catch (const NetworkException& e) {
+        notif = "Failed to send login info to server";
+        return false;
+    }
+
     return true;
+}
+
+bool Client::requestMatches() {
+    if (isInvalid()) {
+        cerr << "Connection has been closed." << endl;
+        return false;
+    }
+    if (connector->lastMsg == Msg::Pending) {
+        cerr << "Client is busy. Try again" << endl;
+        return false;
+    }
+    connector->lastMsg = Msg::Pending;
+    char rCode = Msg::Matches;
+    try {
+        sendData(&rCode, sizeof(char));
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
+        return false;
+    }
+    return true;
+}
+
+void Client::extractMatches(ListMatch *&list) {
+    vector<char> byteStream;
+    byteStream.resize(extractSize);
+    connector->extractBuffer(&byteStream[0], extractSize);
+    if (list != nullptr) {
+        delete list;
+    }
+    list = new ListMatch(byteStream);
 }
 
 bool Client::isAdminAccount(){
@@ -260,4 +309,40 @@ void Client::setMsg(char c) {
 
 char Client::getMsg() {
     return connector->lastMsg;
+}
+
+bool Client::isInvalid() {
+    return (connector == nullptr || connector->socket == INVALID_SOCKET || handler == WSA_INVALID_EVENT);
+}
+
+bool Client::requestDetails(const string& ID) {
+    if (isInvalid()) {
+        cerr << "Connection has been closed." << endl;
+        return false;
+    }
+    if (connector->lastMsg == Msg::Pending) {
+        cerr << "Client is busy. Try again" << endl;
+        return false;
+    }
+    connector->lastMsg = Msg::Pending;
+    char rCode = Msg::Details;
+    try {
+        size_t IDlen = ID.size();
+        sendData(&rCode, sizeof(char));
+        sendData((char *)&IDlen, sizeof(size_t));
+        sendData((char *)ID.c_str(), IDlen);
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
+        return false;
+    }
+    return true;
+}
+
+void Client::extractDetails(const string& ID, MatchDetails &details) {
+    for (int i = 0; i < detailQ.IDs.size(); ++i) {
+        if (ID == detailQ.IDs[i]) {
+            details = MatchDetails(detailQ.buffers[i]);
+            return;
+        }
+    }
 }

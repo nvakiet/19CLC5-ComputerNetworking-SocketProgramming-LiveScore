@@ -4,8 +4,6 @@
             "name": "GCC",
             "includePath": [
                 "${workspaceFolder}/**",
-                "../WxWidgets/include",
-                "../WxWidgets/lib/gcc810_x64_dll/mswud",
                 "../SOCI_4.0.1/include/soci",
                 "../SOCI_4.0.1/include"
             ],
@@ -17,7 +15,7 @@
                 "WXUSINGDLL"
             ],
             "windowsSdkVersion": "10.0.19041.0",
-            "compilerPath": "C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe",
+            "compilerPath": "C:/mingw-w64/mingw64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64"

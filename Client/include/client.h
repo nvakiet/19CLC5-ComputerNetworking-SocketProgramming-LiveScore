@@ -31,6 +31,10 @@ protected:
 public:
     User account;
     int result;
+    size_t extractSize;
+    DetailQueue detailQ;
+    //List of all messages the server can handle from clients
+    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3', Details = '4'};
     //Start winsock
     Client();
     //Log out the account, close socket and clean up winsock, connection infos
@@ -44,9 +48,9 @@ public:
     //Check if the FD_WRITE is triggered, -1 = error, 0 = not triggered, 1 = triggered
     int canSend();
     //Receive message from client, if buf = null, function uses default buffer of socketwrapper
-    int recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    void recvData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = true);
     //Send data to client, if buf = null, function uses default buffer of socketwrapper
-    int sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN);
+    void sendData(char *buf = nullptr, size_t dataSize = DEFAULT_BUFLEN, bool isContinuous = true);
     //Check if can close connection
     bool canClose();
     //Close connection
@@ -54,13 +58,23 @@ public:
     //Log in to the server
     bool login(const string &username, const string &password,string& notif);
     //Register a new account to the server
-    bool registerAcc(const string &username, const string &password);
+    bool registerAcc(const string &username, const string &password, string& notif);
+    //Request a list of matches from the server
+    bool requestMatches();
+    //Extract the match list from the buffer
+    void extractMatches(ListMatch *&list);
     // Check if client 
     bool isAdminAccount();
+    //Check if the socket is valid
+    bool isInvalid();
     // Set Msg received from server
     void setMsg(char c);
     // Get the recorded message
     char getMsg();
+    //Request an event detail list of a match from the server
+    bool requestDetails(const string& ID);
+    //Extract the details from the buffer
+    void extractDetails(const string& ID, MatchDetails &details);
 };
 
 #endif

@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "../WxWidgets/include",
-                "../WxWidgets/lib/gcc810_x64_dll/mswud"
+                "../WxWidgets/lib/gcc810_x64_dll/mswud",
+                "${workspaceFolder}/include"
             ],
             "defines": [
                 "__WXMSW__",
