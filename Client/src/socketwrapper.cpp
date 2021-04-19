@@ -17,6 +17,7 @@ void SocketInfo::setBuffer(char *newBuf, size_t newLen) {
 void SocketInfo::appendBuffer(char *data, size_t len) {
     dataBuf.buf = (&buf[0]) + buf.size();
     dataBuf.len = len;
+    //buf.reserve((buf.size() + len) * 2);
     buf.resize(buf.size() + len);
     if (data != nullptr)
         buf.insert(buf.end(), data, data + len);

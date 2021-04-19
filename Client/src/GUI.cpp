@@ -86,6 +86,9 @@ void MyApp::socketHandling() {
                         client->setMsg(Client::Matches);
                         break;
                     }
+                    case Client::Details: {
+                        
+                    }
                     default:
                         cerr << "Invalid request code." << endl;
                         client->setMsg('\0');

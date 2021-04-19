@@ -126,10 +126,15 @@ void Client::recvData(char *buf, size_t dataSize, bool isContinuous) {
         connector->byteRecv = 0;
     }
     if (buf == nullptr) {
-        connector->buf.reserve(2 * dataSize);
-        connector->buf.resize(dataSize);
-        connector->dataBuf.buf = &(connector->buf[0]);
-        connector->dataBuf.len = dataSize;
+        if (connector->buf.empty()) {
+            connector->buf.reserve(2 * dataSize);
+            connector->buf.resize(dataSize);
+            connector->dataBuf.buf = &(connector->buf[0]);
+            connector->dataBuf.len = dataSize;
+        }
+        else {
+            connector->appendBuffer(nullptr, dataSize);
+        }
     }
     else {
         connector->dataBuf.buf = buf;
@@ -308,4 +313,38 @@ char Client::getMsg() {
 
 bool Client::isInvalid() {
     return (connector == nullptr || connector->socket == INVALID_SOCKET || handler == WSA_INVALID_EVENT);
+}
+
+bool Client::requestDetails(const string& ID) {
+    if (isInvalid()) {
+        cerr << "Connection has been closed." << endl;
+        return false;
+    }
+    if (connector->lastMsg == Msg::Pending) {
+        cerr << "Client is busy. Try again" << endl;
+        return false;
+    }
+    connector->lastMsg = Msg::Pending;
+    char rCode = Msg::Details;
+    try {
+        size_t IDlen = ID.size();
+        sendData(&rCode, sizeof(char));
+        sendData((char *)&IDlen, sizeof(size_t));
+        sendData((char *)ID.c_str(), IDlen);
+    } catch (const NetworkException& e) {
+        cerr << e.what() << endl;
+        return false;
+    }
+    return true;
+}
+
+void Client::extractDetails(const string& ID, MatchDetails *&details) {
+    for (int i = 0; i < detailQ.IDs.size(); ++i) {
+        if (ID == detailQ.IDs[i]) {
+            if (details != nullptr)
+                delete details;
+            details = new MatchDetails(detailQ.buffers[i]);
+            return;
+        }
+    }
 }

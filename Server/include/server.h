@@ -36,7 +36,7 @@ private:
     bool removeSocket(int index, bool willLogout = true);
 public:
     //List of all messages the server can handle from clients
-    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3'};
+    enum Msg {Pending = '0', Login = '1', Register = '2', Matches = '3', Details = '4'};
     //Start Winsock and get server address, construct LiveScore Database connector and GUI
     Server(const string& connectString, const char* ipAddr = nullptr);
     //Shutdown server, free address list
