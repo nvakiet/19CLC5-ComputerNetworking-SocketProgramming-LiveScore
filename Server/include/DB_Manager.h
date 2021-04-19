@@ -32,7 +32,7 @@ public:
     void queryMatches(ListMatch &list);
     //Get detail event of a match
     //Return: true = valid match id (may not have details yet), false = invalid id, match doesn't exist
-    bool queryMatchDetail(const string &ID, MatchDetails& match);
+    void queryMatchDetail(const string &ID, MatchDetails& match);
 };
 
 #endif

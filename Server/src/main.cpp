@@ -90,7 +90,6 @@ int main() {
    DB_Manager db("");
    MatchDetails detail;
    db.queryMatchDetail("AL", detail);
-   cout << detail.nameGroup << endl;
    for (auto it = detail.listEvent.begin(); it != detail.listEvent.end(); ++it) {
       cout << (*it).timeline << ' ' << (*it).namePlayerTeamA << ' ';
       if ((*it).isGoal) {
