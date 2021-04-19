@@ -248,6 +248,7 @@ MatchDetails::MatchDetails(vector<char> response)
 {
     size_t numEvent = 0;
     extractBuffer((char *)&numEvent, sizeof(size_t), response);
+    listEvent.reserve(numEvent);
     size_t expectedSize = 0;
 
     for(int index = 0; index < numEvent ; index++)

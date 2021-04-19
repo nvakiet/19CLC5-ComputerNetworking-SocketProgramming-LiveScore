@@ -358,9 +358,26 @@ int Server::handleRequest(char rCode, int iSock) {
             return -1;
         }
     }
+    //HANDLE MATCH LIST REQUEST
     if (rCode == Msg::Matches) {
         socketList[iSock]->lastMsg = rCode;
         cout << "User " << accounts[iSock - 1].username << " is requesting match list" << endl;
+        return 1;
+    }
+    //HANDLE MATCH DETAIL REQUEST
+    if (rCode == Msg::Details) {
+        socketList[iSock]->lastMsg = rCode;
+        size_t len;
+        try {
+            recvData(iSock, (char *)&len, sizeof(size_t));
+            recvData(iSock, nullptr, len);
+        } catch (const NetworkException& e) {
+            cerr << e.what() << endl;
+            cerr << "Failed to receive match details request from user " << accounts[iSock - 1].username << ". Socket will be closed." << endl;
+            removeSocket(iSock);
+            return -1;
+        }
+        cout << "User " << accounts[iSock - 1].username << " is requesting details of a match" << endl;
         return 1;
     }
     return 0;
@@ -430,6 +447,59 @@ bool Server::handleFeedback(int iSock) {
             return false;
         }
         cout << "Match list has been sent to user " << accounts[iSock - 1].username << endl;
+        socketList[iSock]->lastMsg = Msg::Pending;
+        return true;
+    }
+    //MATCH DETAIL QUERY RESULT
+    if (socketList[iSock]->lastMsg == Msg::Details) {
+        string ID;
+        MatchDetails match;
+        ID.resize(socketList[iSock]->buf.size());
+        socketList[iSock]->extractBuffer(&ID[0], socketList[iSock]->buf.size());
+        size_t len = ID.size(), byteSize = 0;
+        db.queryMatchDetail(ID, match);
+        // for (auto it = match.listEvent.begin(); it != match.listEvent.end(); ++it) {
+        //     cout << (*it).timeline << ' ' << (*it).namePlayerTeamA << ' ';
+        //     if ((*it).isGoal) {
+        //         cout << (*it).scoreA << " - " << (*it).scoreB << ' ' << (*it).namePlayerTeamB << endl;
+        //     }
+        //     else {
+        //         cout << (*it).card << ' ' << (*it).namePlayerTeamB << endl;
+        //     }
+        // }
+        try {
+            sendData(iSock, &socketList[iSock]->lastMsg, sizeof(char));
+            if (match.listEvent.size() != 0) {
+                vector<char> temp;
+                match.toByteStream(temp);
+                MatchDetails testing(temp);
+                for (auto it = testing.listEvent.begin(); it != testing.listEvent.end(); ++it) {
+                    cout << (*it).timeline << ' ' << (*it).namePlayerTeamA << ' ';
+                    if ((*it).isGoal) {
+                        cout << (*it).scoreA << " - " << (*it).scoreB << ' ' << (*it).namePlayerTeamB << endl;
+                    }
+                    else {
+                        cout << (*it).card << ' ' << (*it).namePlayerTeamB << endl;
+                    }
+                }
+                byteSize = temp.size();
+                sendData(iSock, (char *)&len, sizeof(size_t));
+                sendData(iSock, &ID[0], len);
+                sendData(iSock, (char *)&byteSize, sizeof(size_t));
+                sendData(iSock, &temp[0], byteSize);
+            }
+            else {
+                sendData(iSock, (char *)&len, sizeof(size_t));
+                sendData(iSock, &ID[0], len);
+                sendData(iSock, (char *)&byteSize, sizeof(size_t));
+            }
+        } catch (const NetworkException& e) {
+            cerr << e.what() << endl;
+            cerr << "Failed to send match details to user " << accounts[iSock - 1].username << ". Connection will be closed." << endl;
+            removeSocket(iSock);
+            return false;
+        }
+        cout << "Details of match ID: " << ID << " have been sent to user " << accounts[iSock - 1].username << endl;
         socketList[iSock]->lastMsg = Msg::Pending;
         return true;
     }

@@ -31,7 +31,6 @@ public:
     //Get match list from database
     void queryMatches(ListMatch &list);
     //Get detail event of a match
-    //Return: true = valid match id (may not have details yet), false = invalid id, match doesn't exist
     void queryMatchDetail(const string &ID, MatchDetails& match);
 };
 

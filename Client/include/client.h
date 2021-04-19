@@ -74,7 +74,7 @@ public:
     //Request an event detail list of a match from the server
     bool requestDetails(const string& ID);
     //Extract the details from the buffer
-    void extractDetails(const string& ID, MatchDetails *&details);
+    void extractDetails(const string& ID, MatchDetails &details);
 };
 
 #endif

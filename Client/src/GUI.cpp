@@ -38,6 +38,7 @@ wxDEFINE_EVENT(LIST_RECV, wxThreadEvent);
 wxDEFINE_EVENT(SOCK_CLOSE, wxThreadEvent);
 wxDEFINE_EVENT(LOGIN_RESULT, wxThreadEvent);
 wxDEFINE_EVENT(REGIS_RESULT, wxThreadEvent);
+wxDEFINE_EVENT(DETAIL_RECV, wxThreadEvent);
 
 void MyApp::socketHandling() {
     wxWindow *currentWindow = nullptr;
@@ -77,9 +78,7 @@ void MyApp::socketHandling() {
                     case Client::Matches: {
                         //The server send back list of matches
                         client->recvData((char *)&(client->extractSize), sizeof(size_t));
-                        //cout << "Expected " << client->extractSize << endl;
                         client->recvData(nullptr, client->extractSize);
-                        //cout << "Receive " << client->connector->buf.size() << endl;
                         cout << "Received match list from server" << endl;
                         wxThreadEvent e(LIST_RECV);
                         currentWindow->GetEventHandler()->QueueEvent(e.Clone());
@@ -87,7 +86,53 @@ void MyApp::socketHandling() {
                         break;
                     }
                     case Client::Details: {
-                        
+                        //The server send back list of event details of a match
+                        //Receive match ID
+                        string ID;
+                        client->recvData((char *)&(client->extractSize), sizeof(size_t));
+                        ID.resize(client->extractSize);
+                        client->recvData(&ID[0], client->extractSize);
+                        //Receive match size as byte stream
+                        client->recvData((char *)&(client->extractSize), sizeof(size_t));
+                        if (client->extractSize > 0) {
+                            //If the match has events recorded
+                            buftype temp;
+                            temp.resize(client->extractSize);
+                            client->recvData(&temp[0], temp.size());
+                            //Store the byte stream into a detail queue
+                            bool found = false;
+                            for (int i = 0; i < client->detailQ.IDs.size(); ++i) {
+                                if (client->detailQ.IDs[i] == ID) {
+                                    client->detailQ.buffers[i] = temp;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                client->detailQ.IDs.push_back(ID);
+                                client->detailQ.buffers.emplace_back(temp);
+                            }
+                        }
+                        wxThreadEvent e(DETAIL_RECV);
+                        e.SetString(ID);
+                        e.SetExtraLong(client->extractSize);
+                        //If the current window is the main frame
+                        auto parent = currentWindow->GetParent();
+                        if (parent == nullptr) {
+                            //Signal the event to all detail frames
+                            auto childrenFrames = currentWindow->GetChildren();
+                            for (auto frame : childrenFrames) {
+                                frame->GetEventHandler()->QueueEvent(e.Clone());
+                            }
+                        }
+                        else {
+                            //If the current window is a detail frame => the main frame is parent window, then do the same as above
+                            auto childrenFrames = parent->GetChildren();
+                            for (auto frame : childrenFrames) {
+                                frame->GetEventHandler()->QueueEvent(e.Clone());
+                            }
+                        }
+                        break;
                     }
                     default:
                         cerr << "Invalid request code." << endl;

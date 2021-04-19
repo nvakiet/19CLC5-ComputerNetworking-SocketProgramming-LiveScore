@@ -81,7 +81,9 @@ class MainFrame : public wxFrame
 class DetailFrame_ForAdmin : public wxFrame 
 {
 	private:
-		MatchDetails* data;
+		MatchDetails data;
+		MatchInfo mInfo;
+		Client *client;
 
 	protected:
 		wxStaticText* TITLE;
@@ -101,10 +103,11 @@ class DetailFrame_ForAdmin : public wxFrame
 		virtual void OnAddClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnUpdateClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteCLick( wxCommandEvent& event ) { event.Skip(); }
+		void OnRecvDetails(wxThreadEvent &event);
 		virtual void DisplayData();
 	public:
 		
-		DetailFrame_ForAdmin(MatchInfo,wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
+		DetailFrame_ForAdmin(Client* ptr_client, MatchInfo,wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 830,580 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE );
 		
 		~DetailFrame_ForAdmin();
 	
@@ -113,7 +116,9 @@ class DetailFrame_ForAdmin : public wxFrame
 class DetailFrame_ForClient : public wxFrame 
 {
 	private:
-		MatchDetails* data;
+		MatchDetails data;
+		MatchInfo mInfo;
+		Client *client;
 
 	protected:
 		wxStaticText* TITLE;
@@ -127,11 +132,11 @@ class DetailFrame_ForClient : public wxFrame
 		virtual void DisplayData();
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
-		
+		void OnRecvDetails(wxThreadEvent &event);
 	
 	public:
 		
-		DetailFrame_ForClient(MatchInfo, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxALWAYS_SHOW_SB );
+		DetailFrame_ForClient(Client* ptr_client, MatchInfo, wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("LIVE SCORE APP"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCAPTION|wxCLOSE_BOX|wxDEFAULT_FRAME_STYLE|wxALWAYS_SHOW_SB );
 		
 		~DetailFrame_ForClient();
 	
@@ -143,6 +148,7 @@ wxDECLARE_EVENT(LIST_RECV, wxThreadEvent);
 wxDECLARE_EVENT(SOCK_CLOSE, wxThreadEvent);
 wxDECLARE_EVENT(LOGIN_RESULT, wxThreadEvent);
 wxDECLARE_EVENT(REGIS_RESULT, wxThreadEvent);
+wxDECLARE_EVENT(DETAIL_RECV, wxThreadEvent);
 wxDECLARE_EVENT(TIMED_REFRESH, wxTimerEvent);
 class MyApp : public wxApp
 {

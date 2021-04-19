@@ -13,6 +13,7 @@ struct User
     string username;
     bool isAdmin;
 };
+
 struct MatchInfo
 {
 public:
@@ -29,6 +30,7 @@ public:
     void updateData(vector<char> response);
     void toByteStream(vector<char> &result);
 };
+
 struct ListMatch
 {
     vector<MatchInfo> LstMatch;

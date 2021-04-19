@@ -338,12 +338,10 @@ bool Client::requestDetails(const string& ID) {
     return true;
 }
 
-void Client::extractDetails(const string& ID, MatchDetails *&details) {
+void Client::extractDetails(const string& ID, MatchDetails &details) {
     for (int i = 0; i < detailQ.IDs.size(); ++i) {
         if (ID == detailQ.IDs[i]) {
-            if (details != nullptr)
-                delete details;
-            details = new MatchDetails(detailQ.buffers[i]);
+            details = MatchDetails(detailQ.buffers[i]);
             return;
         }
     }

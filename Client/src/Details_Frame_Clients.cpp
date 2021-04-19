@@ -1,12 +1,12 @@
 
 #include "GUI.h"
 
-DetailFrame_ForClient::DetailFrame_ForClient(MatchInfo match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style)
+DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style), mInfo(match), client(ptr_client)
 {
     //FOR DEBUG ONLY:
     //initialize data;
-    data = new MatchDetails();
-    data->match = &match;
+    //data = MatchDetails();
+    //data->match = &match;
     this->SetSizeHints(wxDefaultSize, wxDefaultSize);
     this->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_INFOBK));
 
@@ -150,37 +150,59 @@ DetailFrame_ForClient::DetailFrame_ForClient(MatchInfo match, wxWindow *parent, 
 
     // Connect Events
     REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    Bind<>(DETAIL_RECV, OnRecvDetails, this);
+    //Send the request for details and start the timer
+	client->requestDetails(mInfo.id);
 }
+
 void DetailFrame_ForClient::DisplayData()
 {
-    if (data->listEvent.size() > DETAILS_MATCH_TABLE->GetNumberRows())
+    if (data.listEvent.size() > DETAILS_MATCH_TABLE->GetNumberRows())
     {
-        DETAILS_MATCH_TABLE->AppendRows(data->listEvent.size() - DETAILS_MATCH_TABLE->GetNumberRows());
+        DETAILS_MATCH_TABLE->AppendRows(data.listEvent.size() - DETAILS_MATCH_TABLE->GetNumberRows());
     }
     DETAILS_MATCH_TABLE->ClearGrid();
-    for (int index = 0; index < data->listEvent.size(); index++)
+    for (int index = 0; index < data.listEvent.size(); index++)
     {
-        DETAILS_MATCH_TABLE->SetCellValue(index, 0, data->listEvent[index].timeline);
-        DETAILS_MATCH_TABLE->SetCellValue(index, 1, data->listEvent[index].namePlayerTeamA);
-        if (data->listEvent[index].isGoal)
+        DETAILS_MATCH_TABLE->SetCellValue(index, 0, data.listEvent[index].timeline);
+        DETAILS_MATCH_TABLE->SetCellValue(index, 1, data.listEvent[index].namePlayerTeamA);
+        if (data.listEvent[index].isGoal)
         {
-            DETAILS_MATCH_TABLE->SetCellValue(index, 2, to_string(data->listEvent[index].scoreA) + " - " + to_string(data->listEvent[index].scoreB));
+            DETAILS_MATCH_TABLE->SetCellValue(index, 2, to_string(data.listEvent[index].scoreA) + " - " + to_string(data.listEvent[index].scoreB));
         }
         else
         {
-            DETAILS_MATCH_TABLE->SetCellValue(index, 2, data->listEvent[index].card);
+            DETAILS_MATCH_TABLE->SetCellValue(index, 2, data.listEvent[index].card);
         }
-        DETAILS_MATCH_TABLE->SetCellValue(index, 3, data->listEvent[index].namePlayerTeamB);
+        DETAILS_MATCH_TABLE->SetCellValue(index, 3, data.listEvent[index].namePlayerTeamB);
     }
 }
 DetailFrame_ForClient::~DetailFrame_ForClient()
 {
     // Disconnect Events
     REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    for (int i = 0; i < client->detailQ.IDs.size(); ++i) {
+		if (client->detailQ.IDs[i] == mInfo.id) {
+			client->detailQ.IDs.erase(client->detailQ.IDs.begin() + i);
+			client->detailQ.buffers.erase(client->detailQ.buffers.begin() + i);
+			break;
+		}
+	}
+	//delete data;
     delete TITLE;
     delete REFRESH_BUTTON;
     delete TeamALabel;
     delete ScoreLabel;
     delete TeamBLabel;
     delete DETAILS_MATCH_TABLE;
+}
+
+void DetailFrame_ForClient::OnRecvDetails(wxThreadEvent &event) {
+	if (event.GetString() == mInfo.id) {
+		if (event.GetExtraLong() > 0) {
+			client->extractDetails(mInfo.id, data);
+			DisplayData();
+		}
+		client->setMsg('\0');
+	}
 }
