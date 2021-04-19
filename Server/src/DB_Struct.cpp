@@ -297,24 +297,19 @@ bool goalcomeFirst(string timeline_Score, string timeline_Card)
 {   
     int overtime_score = 0;
     int overtime_card = 0;
-    int minute_score;
-    int minute_card;
     int pos_first_score = timeline_Score.find_first_of(char(39));
     int pos_first_card = timeline_Card.find_first_of(char(39));
     int pos_last_score = timeline_Score.find_last_of(char(39));
     int pos_last_card = timeline_Card.find_last_of(char(39));
-    if (pos_first_score == pos_last_score)
+    int minute_score= stoi(timeline_Score.substr(0,pos_first_score));
+    int minute_card = stoi(timeline_Card.substr(0,pos_first_card));
+    if (pos_first_score < pos_last_score)
     {
-        minute_score = stoi(timeline_Score.substr(0,pos_first_score));
-    }
-    else {
+
         overtime_score = stoi(timeline_Score.substr(pos_first_score+4,pos_last_score - pos_first_score -4));
     }
-    if (pos_first_card == pos_last_card)
+    if (pos_first_card < pos_last_card)
     {
-        minute_card = stoi(timeline_Card.substr(0,pos_first_card));
-    }
-    else {
         overtime_card = stoi(timeline_Card.substr(pos_first_card+4,pos_last_card - pos_first_card -4));
     }
     if (minute_score < minute_card)
@@ -366,7 +361,7 @@ MatchDetails::MatchDetails(const vector<Event> &scores, const vector<Event> &car
         {
             while (index_card < cards.size())
             {
-                listEvent.push_back(scores[index_card]);
+                listEvent.push_back(cards[index_card]);
                 index_card++;
             }
         }
