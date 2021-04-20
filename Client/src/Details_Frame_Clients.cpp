@@ -24,14 +24,14 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxBoxSizer *BodyBox;
     BodyBox = new wxBoxSizer(wxVERTICAL);
 
-    wxBoxSizer *ButtonBox;
-    ButtonBox = new wxBoxSizer(wxVERTICAL);
+    // wxBoxSizer *ButtonBox;
+    // ButtonBox = new wxBoxSizer(wxVERTICAL);
 
-    ButtonBox->SetMinSize(wxSize(10, -1));
-    REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxSize(200, -1), wxBU_EXACTFIT);
-    ButtonBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
+    // ButtonBox->SetMinSize(wxSize(10, -1));
+    // REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxSize(200, -1), wxBU_EXACTFIT);
+    // ButtonBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
 
-    BodyBox->Add(ButtonBox, 1, wxEXPAND, 5);
+    // BodyBox->Add(ButtonBox, 1, wxEXPAND, 5);
 
 
     // wxBoxSizer *Group_DateBox;
@@ -69,7 +69,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxString wxTeamA(match.teamA.c_str(), wxConvUTF8);
     TeamALabel = new wxStaticText(this, wxID_ANY, wxTeamA, wxDefaultPosition, wxDefaultSize, 0);
     TeamALabel->Wrap(-1);
-    TeamALabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+    TeamALabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
     TeamABox->Add(TeamALabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -81,8 +81,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
 	wxString wxScore(score.c_str(), wxConvUTF8);
     ScoreLabel = new wxStaticText(this, wxID_ANY, wxScore, wxDefaultPosition, wxDefaultSize, 0);
     ScoreLabel->Wrap(-1);
-    ScoreLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
-
+    ScoreLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
     ScoreBox->Add(ScoreLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
     NameMatchBox->Add(ScoreBox, 1, wxEXPAND, 5);
@@ -92,7 +91,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxString wxTeamB(match.teamB.c_str(), wxConvUTF8);
     TeamBLabel = new wxStaticText(this, wxID_ANY, wxTeamB, wxDefaultPosition, wxDefaultSize, 0);
     TeamBLabel->Wrap(-1);
-    TeamBLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+    TeamBLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
     TeamBBox->Add(TeamBLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -149,7 +148,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     this->Centre(wxBOTH);
 
     // Connect Events
-    REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    //REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
     Bind<>(DETAIL_RECV, OnRecvDetails, this);
     //Send the request for details and start the timer
 	client->requestDetails(mInfo.id);
@@ -175,6 +174,20 @@ void DetailFrame_ForClient::DisplayData()
         }
         else
         {
+            if(data.listEvent[index].card.size()==5){
+                if(data.listEvent[index].card[0]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[0]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 255, 0 ));
+                }
+                if(data.listEvent[index].card[4]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[4]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 255, 0 ));
+                }
+            }
             DETAILS_MATCH_TABLE->SetCellValue(index, 2, data.listEvent[index].card);
         }
         DETAILS_MATCH_TABLE->SetCellValue(index, 3, data.listEvent[index].namePlayerTeamB);
@@ -183,7 +196,7 @@ void DetailFrame_ForClient::DisplayData()
 DetailFrame_ForClient::~DetailFrame_ForClient()
 {
     // Disconnect Events
-    REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    //REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
     for (int i = 0; i < client->detailQ.IDs.size(); ++i) {
 		if (client->detailQ.IDs[i] == mInfo.id) {
 			client->detailQ.IDs.erase(client->detailQ.IDs.begin() + i);
@@ -193,7 +206,8 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 	}
 	//delete data;
     delete TITLE;
-    delete REFRESH_BUTTON;
+    delete timer;
+    //delete REFRESH_BUTTON;
     delete TeamALabel;
     delete ScoreLabel;
     delete TeamBLabel;
@@ -203,9 +217,19 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 void DetailFrame_ForClient::OnRecvDetails(wxThreadEvent &event) {
 	if (event.GetString() == mInfo.id) {
 		if (event.GetExtraLong() > 0) {
-            timer->Start(30000);
+            timer->Stop();
             client->extractDetails(mInfo.id, data);
-			DisplayData();
+            //Get new total score
+            for (int i = data.listEvent.size() - 1; i >= 0; --i) {
+                if (data.listEvent[i].isGoal) {
+                    string score = to_string(data.listEvent[i].scoreA) + " - " + to_string(data.listEvent[i].scoreB);
+	                wxString wxScore(score.c_str(), wxConvUTF8);
+                    ScoreLabel->SetLabelText(wxScore);
+                    break;
+                }
+            }
+            DisplayData();
+            timer->Start(30000);
 		}
 		client->setMsg('\0');
 	}

@@ -10,9 +10,9 @@
             ],
             "defines": [
                 "__WXMSW__",
-                "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
+                "_DEBUG",
                 "WXUSINGDLL"
             ],
             "windowsSdkVersion": "10.0.19041.0",

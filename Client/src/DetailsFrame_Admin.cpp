@@ -1,5 +1,3 @@
-
-
 #include "GUI.h"
 
 DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style), mInfo(match), client(ptr_client)
@@ -29,13 +27,13 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	ButtonBox = new wxBoxSizer(wxHORIZONTAL);
 
 	ButtonBox->SetMinSize(wxSize(10, -1));
-	wxBoxSizer *RefreshBox;
-	RefreshBox = new wxBoxSizer(wxVERTICAL);
-
-	REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-	RefreshBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
-
-	ButtonBox->Add(RefreshBox, 1, wxEXPAND, 5);
+//	wxBoxSizer *RefreshBox;
+//	RefreshBox = new wxBoxSizer(wxVERTICAL);
+//
+//	REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+//	RefreshBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
+//
+//	ButtonBox->Add(RefreshBox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *AddNewBox;
 	AddNewBox = new wxBoxSizer(wxVERTICAL);
@@ -98,7 +96,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	wxString wxTeamA(match.teamA.c_str(), wxConvUTF8);
 	TeamALabel = new wxStaticText(this, wxID_ANY, wxTeamA, wxDefaultPosition, wxDefaultSize, 0);
 	TeamALabel->Wrap(-1);
-	TeamALabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+	TeamALabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
 	TeamABox->Add(TeamALabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -110,7 +108,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	wxString wxScore(score.c_str(), wxConvUTF8);
 	ScoreLabel = new wxStaticText(this, wxID_ANY, wxScore, wxDefaultPosition, wxDefaultSize, 0);
 	ScoreLabel->Wrap(-1);
-	ScoreLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+	ScoreLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
 	ScoreBox->Add(ScoreLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -121,7 +119,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	wxString wxTeamB(match.teamB.c_str(), wxConvUTF8);
 	TeamBLabel = new wxStaticText(this, wxID_ANY, wxTeamB, wxDefaultPosition, wxDefaultSize, 0);
 	TeamBLabel->Wrap(-1);
-	TeamBLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+	TeamBLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
 	TeamBBox->Add(TeamBLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -178,7 +176,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	this->Centre(wxBOTH);
 
 	// Connect Events
-	REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
+//	REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
 	AddBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnAddClick), NULL, this);
 	UPDATEBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
@@ -208,6 +206,20 @@ void DetailFrame_ForAdmin::DisplayData()
 		}
 		else
 		{
+			if(data.listEvent[index].card.size()==5){
+                if(data.listEvent[index].card[0]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[0]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 255, 0 ));
+                }
+                if(data.listEvent[index].card[4]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[4]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 255, 0 ));
+                }
+            }
 			DETAILS_MATCH_TABLE->SetCellValue(index, 2, data.listEvent[index].card);
 		}
 		DETAILS_MATCH_TABLE->SetCellValue(index, 3, data.listEvent[index].namePlayerTeamB);
@@ -216,7 +228,7 @@ void DetailFrame_ForAdmin::DisplayData()
 DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 {
 	// Disconnect Events
-	REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
+	//REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
 	AddBUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnAddClick), NULL, this);
 	UPDATEBUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
@@ -228,8 +240,9 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 		}
 	}
 	//delete data;
+	delete timer;
 	delete TITLE;
-	delete REFRESH_BUTTON;
+	//delete REFRESH_BUTTON;
 	delete AddBUTTON;
 	delete UPDATEBUTTON;
 	delete DELETEBUTON;
@@ -242,9 +255,19 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 void DetailFrame_ForAdmin::OnRecvDetails(wxThreadEvent &event) {
 	if (event.GetString() == mInfo.id) {
 		if (event.GetExtraLong() > 0) {
-			timer->Start(30000);
+			timer->Stop();
 			client->extractDetails(mInfo.id, data);
+			//Get new total score
+            for (int i = data.listEvent.size() - 1; i >= 0; --i) {
+                if (data.listEvent[i].isGoal) {
+                    string score = to_string(data.listEvent[i].scoreA) + " - " + to_string(data.listEvent[i].scoreB);
+	                wxString wxScore(score.c_str(), wxConvUTF8);
+                    ScoreLabel->SetLabelText(wxScore);
+                    break;
+                }
+            }
 			DisplayData();
+			timer->Start(30000);
 		}
 		client->setMsg('\0');
 	}
