@@ -1,5 +1,6 @@
 #include "server.h"
 #include <cstring>
+#include <fstream>
 
 bool isRunning = true;
 Server *ptr = nullptr;
@@ -14,20 +15,34 @@ BOOL WINAPI OnExit(DWORD dwCtrlType) {
    return false;
 }
 
+void readConnectString(string& sCnnString) {
+   ifstream fin;
+   fin.open("LiveScoreDB.dsn");
+   if (!fin.is_open())
+      return;
+   else {
+      string temp;
+      fin.ignore(1024, '\n');
+      while (getline(fin, temp, '\n'))
+      {
+         sCnnString += temp + ';';
+      }
+   }
+}
+
 int main(int argc, char** argv) {
    char *bindIP = nullptr;
    string dbString = "";
-   if (argc > 3) {
-      cerr << "Wrong command line arguments. Usage: [server.exe] [Ip address of server] [Database Connection String]" << endl;
+   if (argc > 2) {
+      cerr << "Wrong command line arguments. Usage: [server.exe] [IP address or hostname of server]" << endl;
       return 1;
    }
-   if (argc >= 2) {
+   if (argc == 2) {
       bindIP = argv[1];
    }
-   if (argc == 3) {
-      int argvLen = strlen(argv[2]);
-      dbString.assign(argv[2], argv[2] + argvLen);
-   }
+   //Read the connection string from dsn file
+   readConnectString(dbString);
+
    if (FALSE == SetConsoleCtrlHandler(OnExit, TRUE)) {
       cerr << "Unable to setup exit routine for the program. Error: " << GetLastError() << endl;
       return 1;
