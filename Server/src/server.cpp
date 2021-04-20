@@ -74,7 +74,10 @@ bool Server::removeSocket(int index, bool willLogout) {
         accounts.erase(accounts.begin() + index - 1);
     }
     cout << "Socket " << index << " is removed" << endl;
-    cout << "Current client number: " << socketList.size() - 1 << endl;
+    if (socketList.size() >= 1)
+        cout << "Current client number: " << socketList.size() - 1 << endl;
+    else
+        cout << "STOPPED LISTENING..." << endl;
     return true;
 }
 

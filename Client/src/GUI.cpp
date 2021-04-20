@@ -79,7 +79,6 @@ void MyApp::socketHandling() {
                         //The server send back list of matches
                         client->recvData((char *)&(client->extractSize), sizeof(size_t));
                         client->recvData(nullptr, client->extractSize);
-                        cout << "Received match list from server" << endl;
                         wxThreadEvent e(LIST_RECV);
                         currentWindow->GetEventHandler()->QueueEvent(e.Clone());
                         client->setMsg(Client::Matches);

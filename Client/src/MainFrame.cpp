@@ -233,7 +233,6 @@ void MainFrame::OnSearchDetailsDClick(wxGridEvent &event)
 
 void MainFrame::OnReceiveList(wxThreadEvent &event)
 {
-	cout << "Event triggered" << endl;
 	client->extractMatches(data);
 	// for (auto match : data->LstMatch) {
 	// 	cout << match.id << ' ' << match.timeMatch << ' ' << match.teamA << ' ' << match.scoreA << " - " << match.scoreB << ' ' << match.teamB << endl;

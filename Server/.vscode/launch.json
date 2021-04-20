@@ -5,7 +5,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "args": ["DELL-PC", "DRIVER=ODBC Driver 17 for SQL Server;SERVER=localhost;DATABASE=DB_LIVESCORE;Trusted_Connection=Yes"],
+            "args": ["DELL-PC"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
