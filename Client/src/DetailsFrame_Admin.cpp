@@ -1,5 +1,3 @@
-
-
 #include "GUI.h"
 
 DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, wxWindow *parent, wxWindowID id, const wxString &title, const wxPoint &pos, const wxSize &size, long style) : wxFrame(parent, id, title, pos, size, style), mInfo(match), client(ptr_client)
