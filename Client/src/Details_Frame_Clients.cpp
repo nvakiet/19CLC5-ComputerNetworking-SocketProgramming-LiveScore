@@ -69,7 +69,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxString wxTeamA(match.teamA.c_str(), wxConvUTF8);
     TeamALabel = new wxStaticText(this, wxID_ANY, wxTeamA, wxDefaultPosition, wxDefaultSize, 0);
     TeamALabel->Wrap(-1);
-    TeamALabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+    TeamALabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
     TeamABox->Add(TeamALabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -81,8 +81,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
 	wxString wxScore(score.c_str(), wxConvUTF8);
     ScoreLabel = new wxStaticText(this, wxID_ANY, wxScore, wxDefaultPosition, wxDefaultSize, 0);
     ScoreLabel->Wrap(-1);
-    ScoreLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
-
+    ScoreLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
     ScoreBox->Add(ScoreLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
     NameMatchBox->Add(ScoreBox, 1, wxEXPAND, 5);
@@ -92,7 +91,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxString wxTeamB(match.teamB.c_str(), wxConvUTF8);
     TeamBLabel = new wxStaticText(this, wxID_ANY, wxTeamB, wxDefaultPosition, wxDefaultSize, 0);
     TeamBLabel->Wrap(-1);
-    TeamBLabel->SetFont(wxFont(9, 74, 90, 92, false, wxT("Arial")));
+    TeamBLabel->SetFont(wxFont(16, 74, 90, 92, false, wxT("Arial")));
 
     TeamBBox->Add(TeamBLabel, 0, wxALIGN_CENTER|wxALL, 5);
 
@@ -207,6 +206,7 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 	}
 	//delete data;
     delete TITLE;
+    delete timer;
     //delete REFRESH_BUTTON;
     delete TeamALabel;
     delete ScoreLabel;
@@ -217,9 +217,19 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 void DetailFrame_ForClient::OnRecvDetails(wxThreadEvent &event) {
 	if (event.GetString() == mInfo.id) {
 		if (event.GetExtraLong() > 0) {
-            timer->Start(30000);
+            timer->Stop();
             client->extractDetails(mInfo.id, data);
-			DisplayData();
+            //Get new total score
+            for (int i = data.listEvent.size() - 1; i >= 0; --i) {
+                if (data.listEvent[i].isGoal) {
+                    string score = to_string(data.listEvent[i].scoreA) + " - " + to_string(data.listEvent[i].scoreB);
+	                wxString wxScore(score.c_str(), wxConvUTF8);
+                    ScoreLabel->SetLabelText(wxScore);
+                    break;
+                }
+            }
+            DisplayData();
+            timer->Start(30000);
 		}
 		client->setMsg('\0');
 	}

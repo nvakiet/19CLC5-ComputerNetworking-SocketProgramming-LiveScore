@@ -101,7 +101,7 @@ class DetailFrame_ForAdmin : public wxFrame
 		wxGrid* DETAILS_MATCH_TABLE;
 		
 		// Virtual event handlers, overide them in your derived class
-		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnAddClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnUpdateClick( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteCLick( wxCommandEvent& event ) { event.Skip(); }
@@ -133,7 +133,7 @@ class DetailFrame_ForClient : public wxFrame
 		wxGrid* DETAILS_MATCH_TABLE;
 		virtual void DisplayData();
 		// Virtual event handlers, overide them in your derived class
-		virtual void OnRefreshClick( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		void OnRecvDetails(wxThreadEvent &event);
 	
 	public:
