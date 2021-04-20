@@ -24,14 +24,14 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     wxBoxSizer *BodyBox;
     BodyBox = new wxBoxSizer(wxVERTICAL);
 
-    wxBoxSizer *ButtonBox;
-    ButtonBox = new wxBoxSizer(wxVERTICAL);
+    // wxBoxSizer *ButtonBox;
+    // ButtonBox = new wxBoxSizer(wxVERTICAL);
 
-    ButtonBox->SetMinSize(wxSize(10, -1));
-    REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxSize(200, -1), wxBU_EXACTFIT);
-    ButtonBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
+    // ButtonBox->SetMinSize(wxSize(10, -1));
+    // REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxSize(200, -1), wxBU_EXACTFIT);
+    // ButtonBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
 
-    BodyBox->Add(ButtonBox, 1, wxEXPAND, 5);
+    // BodyBox->Add(ButtonBox, 1, wxEXPAND, 5);
 
 
     // wxBoxSizer *Group_DateBox;
@@ -149,7 +149,7 @@ DetailFrame_ForClient::DetailFrame_ForClient(Client* ptr_client, MatchInfo match
     this->Centre(wxBOTH);
 
     // Connect Events
-    REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    //REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
     Bind<>(DETAIL_RECV, OnRecvDetails, this);
     //Send the request for details and start the timer
 	client->requestDetails(mInfo.id);
@@ -175,6 +175,20 @@ void DetailFrame_ForClient::DisplayData()
         }
         else
         {
+            if(data.listEvent[index].card.size()==5){
+                if(data.listEvent[index].card[0]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[0]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 255, 0 ));
+                }
+                if(data.listEvent[index].card[4]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[4]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 255, 0 ));
+                }
+            }
             DETAILS_MATCH_TABLE->SetCellValue(index, 2, data.listEvent[index].card);
         }
         DETAILS_MATCH_TABLE->SetCellValue(index, 3, data.listEvent[index].namePlayerTeamB);
@@ -183,7 +197,7 @@ void DetailFrame_ForClient::DisplayData()
 DetailFrame_ForClient::~DetailFrame_ForClient()
 {
     // Disconnect Events
-    REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
+    //REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForClient::OnRefreshClick), NULL, this);
     for (int i = 0; i < client->detailQ.IDs.size(); ++i) {
 		if (client->detailQ.IDs[i] == mInfo.id) {
 			client->detailQ.IDs.erase(client->detailQ.IDs.begin() + i);
@@ -193,7 +207,7 @@ DetailFrame_ForClient::~DetailFrame_ForClient()
 	}
 	//delete data;
     delete TITLE;
-    delete REFRESH_BUTTON;
+    //delete REFRESH_BUTTON;
     delete TeamALabel;
     delete ScoreLabel;
     delete TeamBLabel;

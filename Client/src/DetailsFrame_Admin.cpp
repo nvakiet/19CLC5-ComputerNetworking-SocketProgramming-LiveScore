@@ -29,13 +29,13 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	ButtonBox = new wxBoxSizer(wxHORIZONTAL);
 
 	ButtonBox->SetMinSize(wxSize(10, -1));
-	wxBoxSizer *RefreshBox;
-	RefreshBox = new wxBoxSizer(wxVERTICAL);
-
-	REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-	RefreshBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
-
-	ButtonBox->Add(RefreshBox, 1, wxEXPAND, 5);
+//	wxBoxSizer *RefreshBox;
+//	RefreshBox = new wxBoxSizer(wxVERTICAL);
+//
+//	REFRESH_BUTTON = new wxButton(this, wxID_ANY, wxT("REFRESH(&F5)"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+//	RefreshBox->Add(REFRESH_BUTTON, 0, wxALIGN_CENTER | wxALL, 5);
+//
+//	ButtonBox->Add(RefreshBox, 1, wxEXPAND, 5);
 
 	wxBoxSizer *AddNewBox;
 	AddNewBox = new wxBoxSizer(wxVERTICAL);
@@ -178,7 +178,7 @@ DetailFrame_ForAdmin::DetailFrame_ForAdmin(Client* ptr_client, MatchInfo match, 
 	this->Centre(wxBOTH);
 
 	// Connect Events
-	REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
+//	REFRESH_BUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
 	AddBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnAddClick), NULL, this);
 	UPDATEBUTTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
@@ -208,6 +208,20 @@ void DetailFrame_ForAdmin::DisplayData()
 		}
 		else
 		{
+			if(data.listEvent[index].card.size()==5){
+                if(data.listEvent[index].card[0]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[0]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,1,wxColour( 255, 255, 0 ));
+                }
+                if(data.listEvent[index].card[4]=='R'){
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 0, 0 ));
+                }
+                else if(data.listEvent[index].card[4]=='Y') {
+                    DETAILS_MATCH_TABLE->SetCellBackgroundColour(index,3,wxColour( 255, 255, 0 ));
+                }
+            }
 			DETAILS_MATCH_TABLE->SetCellValue(index, 2, data.listEvent[index].card);
 		}
 		DETAILS_MATCH_TABLE->SetCellValue(index, 3, data.listEvent[index].namePlayerTeamB);
@@ -216,7 +230,7 @@ void DetailFrame_ForAdmin::DisplayData()
 DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 {
 	// Disconnect Events
-	REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
+	//REFRESH_BUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnRefreshClick), NULL, this);
 	AddBUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnAddClick), NULL, this);
 	UPDATEBUTTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnUpdateClick), NULL, this);
 	DELETEBUTON->Disconnect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(DetailFrame_ForAdmin::OnDeleteCLick), NULL, this);
@@ -229,7 +243,7 @@ DetailFrame_ForAdmin::~DetailFrame_ForAdmin()
 	}
 	//delete data;
 	delete TITLE;
-	delete REFRESH_BUTTON;
+	//delete REFRESH_BUTTON;
 	delete AddBUTTON;
 	delete UPDATEBUTTON;
 	delete DELETEBUTON;

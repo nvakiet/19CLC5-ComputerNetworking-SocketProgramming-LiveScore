@@ -89,7 +89,7 @@ class DetailFrame_ForAdmin : public wxFrame
 
 	protected:
 		wxStaticText* TITLE;
-		wxButton* REFRESH_BUTTON;
+		//wxButton* REFRESH_BUTTON;
 		wxButton* AddBUTTON;
 		wxButton* UPDATEBUTTON;
 		wxButton* DELETEBUTON;
@@ -124,7 +124,7 @@ class DetailFrame_ForClient : public wxFrame
 		DetailRefreshTimer* timer;
 	protected:
 		wxStaticText* TITLE;
-		wxButton* REFRESH_BUTTON;
+		//wxButton* REFRESH_BUTTON;
 		//wxStaticText* GroupNameLabel;
 		//wxStaticText* StartDateLabel;
 		wxStaticText* TeamALabel;
