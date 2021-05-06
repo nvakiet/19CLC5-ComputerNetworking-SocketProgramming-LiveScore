@@ -79,7 +79,7 @@ MainFrame::MainFrame(Client *&a, wxWindow *parent, wxWindowID id, const wxString
 
 	// Columns
 	LIST_MATCH->SetColSize(0, 55);
-	LIST_MATCH->SetColSize(1, 81);
+	LIST_MATCH->SetColSize(1, 100);
 	LIST_MATCH->SetColSize(2, 130);
 	LIST_MATCH->SetColSize(3, 108);
 	LIST_MATCH->SetColSize(4, 136);

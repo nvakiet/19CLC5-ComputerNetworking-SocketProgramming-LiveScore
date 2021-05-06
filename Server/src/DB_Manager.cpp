@@ -85,7 +85,7 @@ void DB_Manager::queryMatches(ListMatch &list) {
             if (minute < 0) {
                 //HH:MM YYYY-MM-DD
                 char timestr[17];
-                strftime(timestr, 17, "%R %F", &tmStart);
+                strftime(timestr, 17, "%Y-%m-%d %H:%M", &tmStart);
                 m.timeMatch = timestr;
             }
             else if (minute > 90) {
