@@ -7,3 +7,7 @@ WxWidgets: https://drive.google.com/drive/folders/1wBLFu_E5BlxDbst9ARd63IHI6MuN1
   
 Place output_client and output_server folders in Client and Server folders, rename them to "output".  
 Place SOCI and WxWidgets folders in the same directory as Client and Server.  
+
+Credits:
+- Ngô Văn Anh Kiệt - Student ID: 19127191
+- Huỳnh Bá Huy - Student ID: 19127420
